@@ -51,13 +51,23 @@ Official ARCs:
 - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0020.md>
 - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0069.md>
 
-Ethereum influenced EIPs:
-- <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1155.md>
-- <https://docs.opensea.io/docs/metadata-standards>
+Algorand documentation:
+- <https://developer.algorand.org/docs/get-details/asa/>
+- <https://developer.algorand.org/docs/get-details/transactions/transactions/#asset-parameters>
+- <https://developer.algorand.org/docs/rest-apis/indexer/#assetparams>
 
-Algorand NFTs:
+Algorand NFT galleries:
 - <https://algogems.io>
 - <https://zestbloom.com>
 - <https://dartroom.xyz>
 - <https://www.nftexplorer.app>
 - <https://www.randgallery.com/algo-collection>
+
+Ethereum influenced EIPs:
+- <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1155.md>
+- <https://docs.opensea.io/docs/metadata-standards>
+
+Misc:
+- <https://nftfactory.org/blog/algorand-nft-assembly-line>
+- <https://stackoverflow.com/questions/74052032/algorand-arc-19-and-arc-69-what-exaclty-is-the-difference>
+- <https://www.techdreams.org/crypto-currency/algorand-arc3-and-arc69-standard-nfts-overview/12382-20220118>
