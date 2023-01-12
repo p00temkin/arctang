@@ -2,11 +2,11 @@
 
 Algorand NFT asset swiss army knife, using the Algorand Java SDK
 
-![alt text](https://github.com/p00temkin/arctang/blob/master/img/arctangr1.png?raw=true)
+![alt text](https://github.com/p00temkin/arctang/blob/master/img/arctangr3.png?raw=true)
 
 ### How it works
 
-TBD
+Command line tool to query/validate/update/mint/backup/integrate Algorand NFTs for various ARC standards on the Algorand blockchain. 
 
 ### Prerequisites
 
