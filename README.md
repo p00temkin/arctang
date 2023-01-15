@@ -18,7 +18,7 @@ the ASA needs to comply with one of the current Algorand NFT-related ARCs. An AR
   - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0003.md>
   - NFT metadata focused standard.
   - The url field points to the NFT metadata. The metadata supports a schema which can have associated integrity and mimetype fields. 
-  - Suitable for immutable NFTs with large metadata files (>1KB size of JSON) and multiple off-chain data references. [1]
+  - Suitable for immutable NFTs with large metadata files (>1KB size of JSON) and multiple off-chain data references.
 
 - **ARC69**
   - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0069.md>
@@ -26,16 +26,14 @@ the ASA needs to comply with one of the current Algorand NFT-related ARCs. An AR
   - The url field points to the NFT digital asset file. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB 
 the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction 
 and simple access to the mediafile url.
-  - Suitable for mutable NFTs where the mediafile is locked, easily accessed, but the compact metadata associated with it changes over time. [1]
+  - Suitable for mutable NFTs where the mediafile is locked, easily accessed, but the compact metadata associated with it changes over time.
  
 - **ARC19**
   - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0019.md>
   - NFT metadata focused standard. 
   - Enforces off-chain IPFS metadata by using the url field as a template populated by the reserve address field which holds the CID. Easy to update since the reserve address value can be replaced with a single 
 transaction, which in turn changes the metadata. 
-  - Suitable for mutable NFTs intended to transition into immutable NFTs, with complete metadata (+mediafile) changes. [1]
-
-[1] To the best of my knowledge, still an Algorand novice.
+  - Suitable for mutable NFTs intended to transition into immutable NFTs, with complete metadata (+mediafile) changes. 
 
 In common for all of these standards is that the four addresses of an ASA (manager, reservice, freeze and clawback) can be updated by the manager address unless it is set to "". 
 
@@ -78,7 +76,7 @@ This stores the details in .avm/networks/MAINNET and you no longer need to speci
 
 - ARC3 asset:
    ```
-	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558
+	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558 --raw
 
    {
 	  "index" : 925168558,
@@ -104,7 +102,7 @@ This stores the details in .avm/networks/MAINNET and you no longer need to speci
 
 - ARC19 asset:
    ```
-   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --raw
 
    {
 	  "index" : 865610737,
@@ -127,7 +125,7 @@ This stores the details in .avm/networks/MAINNET and you no longer need to speci
   
 - ARC69 asset:
    ```
-   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078 --raw
 
    {
 	  "index" : 490139078,
@@ -147,6 +145,32 @@ This stores the details in .avm/networks/MAINNET and you no longer need to speci
 	  }
 	}
 
+   ```
+
+Note that this raw command works against any ASA type and highlights the differences between ARC3, ARC19 and ARC69. If you just want to identify the ARC type of an asset then you can use --arctype as shown below:
+   
+   ```
+	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558 --arctype
+	ASA identified as: ARC3
+		
+	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --arctype
+	ASA identified as: ARC19
+	
+	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078 --arctype
+	ASA identified as: ARC69
+   ```
+
+If you want to parse the raw JSON representation into Java pojos and print a small summary, use --parse as shown below: 
+
+   ```
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558 --parsed
+   standard=ARC3 assetID=925168558 unitName=D02-31 assetName="D02-31 #29863" assetURL=ipfs://Qme9e7yjXTn5iL2gqnVY2H1UydE45B2SEauH6HDJoqS34a#arc3
+   
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --parsed
+   standard=ARC19 assetID=865610737 unitName=S1ANON assetName="Anon 220" assetURL=template-ipfs://{ipfscid:1:raw:reserve:sha2-256}
+   
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078 --parsed
+   standard=ARC69 assetID=490139078 unitName=ALCH0046 assetName="Zip" assetURL=https://gateway.pinata.cloud/ipfs/QmVxZFeLHtbrdtFabb46ToSvegpKyva1jzTkR61a8uM7qT
    ```
 
 ### Prerequisites

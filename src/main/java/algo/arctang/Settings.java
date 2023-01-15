@@ -25,14 +25,18 @@ public class Settings {
 	private Integer port;
 	private String authtoken;
 	private String authtoken_key;
-	
 	private AVMChainInfo chainInfo;
 
-	// Action
+	// Action  
 	private Action action;
-	private boolean safemode = true;
-
 	private Long assetid;
+	
+	private boolean safemode = true;
+	private boolean raw = false;
+	private boolean parsed = false;
+	private boolean arctype = false;
+	
+	private boolean debug = false;
 	
 	public Settings() {
 		super();
@@ -110,6 +114,38 @@ public class Settings {
 		this.assetid = assetid;
 	}
 
+	public boolean isRaw() {
+		return raw;
+	}
+
+	public void setRaw(boolean raw) {
+		this.raw = raw;
+	}
+
+	public boolean isParsed() {
+		return parsed;
+	}
+
+	public void setParsed(boolean parsed) {
+		this.parsed = parsed;
+	}
+
+	public boolean isArctype() {
+		return arctype;
+	}
+
+	public void setArctype(boolean arctype) {
+		this.arctype = arctype;
+	}
+
+	public boolean isDebug() {
+		return debug;
+	}
+
+	public void setDebug(boolean debug) {
+		this.debug = debug;
+	}
+
 	public void sanityCheck() {
 
 		// chain
@@ -148,7 +184,7 @@ public class Settings {
 			
 		} else {
 			// Check if we can get the chain details from 
-			LOGGER.info("Checking for chainInfo details at .avm/networks/" + chain.toString());
+			LOGGER.debug("Checking for chainInfo details at .avm/networks/" + chain.toString());
 			File f = new File(".avm/networks/" + chain.toString());
 			if (f.exists()) {
 				String json = FilesUtils.readStringFromFile(".avm/networks/" + chain.toString());

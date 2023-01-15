@@ -26,7 +26,7 @@ public class Start {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Start.class);
 
 	public static void main(String[] args) {
-		LOGGER.info("arctang init()");
+		LOGGER.debug("arctang init()");
 
 		Settings settings = null;
 		settings = parseCliArgs(args);
@@ -42,14 +42,41 @@ public class Start {
 		 */
 		AVMBlockChainConnector connector = new AVMBlockChainConnector(settings.getChainInfo());
 		Long lastRound = AVMUtils.getLastRound(connector);
-		LOGGER.info("lastRound: " + lastRound);
+		LOGGER.debug("lastRound: " + lastRound);
 
 		/**
 		 * QUERY action
 		 */
-		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid())) {
+		
+		// raw output
+		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isRaw()) {
 			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 			System.out.println(json);
+		}
+		
+		// parsed output
+		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isParsed()) {
+			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
+			
+			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
+			if (standard == AVMNFTStandard.ARC3) {
+				ARC3Asset arcasset = AVMUtils.getARC3Info(connector, settings.getAssetid());
+				System.out.println(arcasset.toString());
+			}
+			if (standard == AVMNFTStandard.ARC19) {
+				ARC19Asset arcasset = AVMUtils.getARC19Info(connector, settings.getAssetid());
+				System.out.println(arcasset.toString());
+			}
+			if (standard == AVMNFTStandard.ARC69) {
+				ARC69Asset arcasset = AVMUtils.getARC69Info(connector, settings.getAssetid());
+				System.out.println(arcasset.toString());
+			}
+		}
+		
+		// arctype output
+		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isArctype()) {
+			AVMNFTStandard standard = AVMUtils.identifyARCStandard(connector, settings.getAssetid());
+			System.out.println("ASA identified as: " + standard);
 		}
 
 	}
@@ -93,10 +120,26 @@ public class Start {
 		Option confignetworkOption = new Option(null, "confignetwork", false, "Configure node to use for Algorand network connectivity, requires --url, --port, --authtoken, --authtoken_key");
 		options.addOption(confignetworkOption);
 		
+		// parsed
+		Option debugOption = new Option(null, "debug", false, "Debug mode");
+		options.addOption(debugOption);
+		
 		// assetID
 		Option assetidOption = new Option(null, "assetid", true, "The ASA assetID");
 		options.addOption(assetidOption);
+		
+		// raw
+		Option rawOption = new Option(null, "raw", false, "Raw output format");
+		options.addOption(rawOption);
+		
+		// parsed
+		Option parsedOption = new Option(null, "parsed", false, "Parsed output format");
+		options.addOption(parsedOption);
 
+		// arctype
+		Option arctypeOption = new Option(null, "arctype", false, "ARC type of assetid");
+		options.addOption(arctypeOption);
+		
 		HelpFormatter formatter = new HelpFormatter();
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
@@ -133,8 +176,13 @@ public class Start {
 			}
 			if (cmd.hasOption("override_safemode")) settings.setSafemode(false);
 
+			if (cmd.hasOption("parsed")) settings.setParsed(true);
+			if (cmd.hasOption("raw")) settings.setRaw(true);
+			if (cmd.hasOption("arctype")) settings.setArctype(true);
+			if (cmd.hasOption("debug")) settings.setDebug(true);
+			
 			settings.sanityCheck();
-			settings.print();
+			if (settings.isDebug()) settings.print();
 
 		} catch (ParseException e) {
 			LOGGER.error("ParseException: " + e.getMessage());
