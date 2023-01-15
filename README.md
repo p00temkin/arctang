@@ -15,41 +15,41 @@ the ASA needs to comply with one of the current Algorand NFT-related ARCs. An AR
 ### Main ARC types
 
 - **ARC3**
- - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0003.md>
- - NFT metadata focused standard.
- - The url field points to the NFT metadata. The metadata supports a schema which can have associated integrity and mimetype fields. 
- - Suitable for immutable NFTs with large metadata files (>1KB size of JSON) and multiple off-chain data references. [1]
+  - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0003.md>
+  - NFT metadata focused standard.
+  - The url field points to the NFT metadata. The metadata supports a schema which can have associated integrity and mimetype fields. 
+  - Suitable for immutable NFTs with large metadata files (>1KB size of JSON) and multiple off-chain data references. [1]
 
 - **ARC69**
- - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0069.md>
- - NFT mediafile focused standard. 
- - The url field points to the NFT digital asset file. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB 
+  - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0069.md>
+  - NFT mediafile focused standard. 
+  - The url field points to the NFT digital asset file. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB 
 the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction 
 and simple access to the mediafile url.
- - Suitable for mutable NFTs where the mediafile is locked, easily accessed, but the compact metadata associated with it changes over time. [1]
+  - Suitable for mutable NFTs where the mediafile is locked, easily accessed, but the compact metadata associated with it changes over time. [1]
  
 - **ARC19**
- - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0019.md>
- - NFT metadata focused standard. 
- - Enforces off-chain IPFS metadata by using the url field as a template populated by the reserve address field which holds the CID. Easy to update since the reserve address value can be replaced with a single 
+  - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0019.md>
+  - NFT metadata focused standard. 
+  - Enforces off-chain IPFS metadata by using the url field as a template populated by the reserve address field which holds the CID. Easy to update since the reserve address value can be replaced with a single 
 transaction, which in turn changes the metadata. 
- - Suitable for mutable NFTs intended to transition into immutable NFTs, with complete metadata (+mediafile) changes. [1]
+  - Suitable for mutable NFTs intended to transition into immutable NFTs, with complete metadata (+mediafile) changes. [1]
 
 In common for all of these standards is that the four addresses of an ASA (manager, reservice, freeze and clawback) can be updated by the manager address unless it is set to "". 
 
 ### Supporting ARCs:
 
 - **ARC20**
- - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0020.md>
- - Standard which defines how to wrap/control an ARC ASA with a smart contract
- - Able to wrap ARC3, ARC69, ARC19 NFTs
- - Populates the 'arc-20' key in the ARC 'properties', indicating the link to the smart contract wrapper
+  - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0020.md>
+  - Standard which defines how to wrap/control an ARC ASA with a smart contract
+  - Able to wrap ARC3, ARC69, ARC19 NFTs
+  - Populates the 'arc-20' key in the ARC 'properties', indicating the link to the smart contract wrapper
 
 - **ARC18**
- - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0018.md>
- - Standard to enforce royalty payments
- - Implementation of ARC20
- - Populates the 'arc-18' key in the ARC 'properties'
+  - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0018.md>
+  - Standard to enforce royalty payments
+  - Implementation of ARC20
+  - Populates the 'arc-18' key in the ARC 'properties'
 
 ### Why arctang?
 - Name? Suggested by chatGPT as a project name including the word 'arc'
