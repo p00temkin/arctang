@@ -6,3 +6,4 @@ bin
 *.jar
 *.pl
 *.bak
+.avm
