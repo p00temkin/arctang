@@ -1,6 +1,6 @@
 ## ARCTANG
 
-Swiss army knife to query/validate/transfer/update/mint/backup NFTs for various ARC standards on the Algorand blockchain.
+Swiss army knife to query/validate/transfer/update/mint/backup NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) Algorand support (part of this project). 
 
 ![alt text](https://github.com/p00temkin/arctang/blob/master/img/arctang_r7.png?raw=true)
 
