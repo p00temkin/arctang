@@ -71,10 +71,7 @@ This stores the details in .avm/networks/MAINNET and you no longer need to speci
 - ARC3 asset:
    ```
 	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558
-   ```
-   
-Result output:
-   ```
+
    {
 	  "index" : 925168558,
 	  "params" : {
@@ -100,10 +97,7 @@ Result output:
 - ARC19 asset:
    ```
    java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737
-   ```
-   
-Result output:
-   ```
+
    {
 	  "index" : 865610737,
 	  "params" : {
@@ -126,10 +120,7 @@ Result output:
 - ARC69 asset:
    ```
    java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078
-   ```
 
-Result output:
-   ```
    {
 	  "index" : 490139078,
 	  "params" : {
@@ -177,7 +168,7 @@ Result output:
 Options:
 
    ```
-
+   <TBD>
    ```
 
 ### Additional useful options/resources
