@@ -12,7 +12,7 @@ batch transfers and transaction security.
 On Algorand an NFT is instead represented as an individual ASA (Algorand Standard Asset). An ASA is not a smart contract but a separate first-class citizen on the Algorand blockchain. To be considered an NFT 
 the ASA needs to comply with one of the current Algorand NFT-related ARCs. An ARC is the equivalent of an ERC on Ethereum. 
 
-### Main ARC types
+### Algorand NFT ARCs
 
 - **ARC3**
   - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0003.md>
@@ -34,6 +34,8 @@ and simple access to the mediafile url.
   - Enforces off-chain IPFS metadata by using the url field as a template populated by the reserve address field which holds the CID. Easy to update since the reserve address value can be replaced with a single 
 transaction, which in turn changes the metadata. 
   - Suitable for mutable NFTs intended to transition into immutable NFTs, with complete metadata (+mediafile) changes. [1]
+
+[1] To the best of my knowledge, still an Algorand novice.
 
 In common for all of these standards is that the four addresses of an ASA (manager, reservice, freeze and clawback) can be updated by the manager address unless it is set to "". 
 
@@ -61,7 +63,13 @@ In common for all of these standards is that the four addresses of an ASA (manag
 First configure how you connect to the Algorand blockchain.
 
    ```
-	java -jar ./arctang.jar --chain MAINNET --action NETCONFIG --nodeurl https://mainnet-algorand.api.purestake.io/ps2 --nodeport 443 --authtoken_key "X-API-Key" --authtoken <api-key>
+	java -jar ./arctang.jar 
+	--chain MAINNET 
+	--action NETCONFIG 
+	--nodeurl https://mainnet-algorand.api.purestake.io/ps2 
+	--nodeport 443 
+	--authtoken_key "X-API-Key" 
+	--authtoken <api-key>
    ```
 
 This stores the details in .avm/networks/MAINNET and you no longer need to specify these parameters for every action, only the --chain option. 
