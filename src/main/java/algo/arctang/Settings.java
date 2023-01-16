@@ -31,10 +31,12 @@ public class Settings {
 	private Action action;
 	private Long assetid;
 	
+	// Options
 	private boolean safemode = true;
 	private boolean raw = false;
 	private boolean parsed = false;
 	private boolean arctype = false;
+	private boolean metadata = false;
 	
 	private boolean debug = false;
 	
@@ -144,6 +146,14 @@ public class Settings {
 
 	public void setDebug(boolean debug) {
 		this.debug = debug;
+	}
+
+	public boolean isMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(boolean metadata) {
+		this.metadata = metadata;
 	}
 
 	public void sanityCheck() {

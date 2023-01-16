@@ -13,12 +13,13 @@ import org.slf4j.LoggerFactory;
 import algo.arctang.enums.Action;
 import crypto.forestfish.enums.avm.AVMChain;
 import crypto.forestfish.enums.avm.AVMNFTStandard;
-import crypto.forestfish.objects.avm.AlgoRelayNode;
 import crypto.forestfish.objects.avm.connector.AVMBlockChainConnector;
 import crypto.forestfish.objects.avm.model.nft.ARC19Asset;
 import crypto.forestfish.objects.avm.model.nft.ARC3Asset;
 import crypto.forestfish.objects.avm.model.nft.ARC69Asset;
+import crypto.forestfish.objects.ipfs.connector.IPFSConnector;
 import crypto.forestfish.utils.AVMUtils;
+import crypto.forestfish.utils.JSONUtils;
 import crypto.forestfish.utils.SystemUtils;
 
 public class Start {
@@ -77,6 +78,32 @@ public class Start {
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isArctype()) {
 			AVMNFTStandard standard = AVMUtils.identifyARCStandard(connector, settings.getAssetid());
 			System.out.println("ASA identified as: " + standard);
+		}
+		
+		// metadata
+		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isMetadata()) {
+			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
+			
+			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
+			if (standard == AVMNFTStandard.ARC3) {
+				ARC3Asset arcasset = AVMUtils.getARC3Info(connector, settings.getAssetid());
+
+				System.out.println("assetURL: " + arcasset.getAssetURL());
+				IPFSConnector ipfs_connector = new IPFSConnector();
+				
+				// Grab the metadata
+				String metajson = ipfs_connector.getStringContent(arcasset.getAssetURL());
+				LOGGER.info("metajson:");
+				System.out.println(JSONUtils.prettyPrint(metajson));
+			}
+			if (standard == AVMNFTStandard.ARC19) {
+				ARC19Asset arcasset = AVMUtils.getARC19Info(connector, settings.getAssetid());
+				System.out.println(arcasset.toString());
+			}
+			if (standard == AVMNFTStandard.ARC69) {
+				ARC69Asset arcasset = AVMUtils.getARC69Info(connector, settings.getAssetid());
+				System.out.println(arcasset.toString());
+			}
 		}
 
 	}
@@ -140,6 +167,10 @@ public class Start {
 		Option arctypeOption = new Option(null, "arctype", false, "ARC type of assetid");
 		options.addOption(arctypeOption);
 		
+		// metadata
+		Option metadataOption = new Option(null, "metadata", false, "Grab the JSON metadata of ARC NFT with specified assetid");
+		options.addOption(metadataOption);
+		
 		HelpFormatter formatter = new HelpFormatter();
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
@@ -180,6 +211,7 @@ public class Start {
 			if (cmd.hasOption("raw")) settings.setRaw(true);
 			if (cmd.hasOption("arctype")) settings.setArctype(true);
 			if (cmd.hasOption("debug")) settings.setDebug(true);
+			if (cmd.hasOption("metadata")) settings.setMetadata(true);
 			
 			settings.sanityCheck();
 			if (settings.isDebug()) settings.print();

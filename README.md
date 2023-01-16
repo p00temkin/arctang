@@ -173,6 +173,38 @@ If you want to parse the raw JSON representation into Java pojos and print a sma
    standard=ARC69 assetID=490139078 unitName=ALCH0046 assetName="Zip" assetURL=https://gateway.pinata.cloud/ipfs/QmVxZFeLHtbrdtFabb46ToSvegpKyva1jzTkR61a8uM7qT
    ```
 
+Note that the NFT metadata is fetched differently for each of these ARC standards. Arctang handles this for you when using the --metadata option:
+
+- ARC3 asset:
+   ```
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558 --metadata
+   .. Updating list of active IPFS gateway URLs ..
+   .. Nr of active IPFS gateways: 18
+   .. Attempting to fetch ipfs://Qme9e7yjXTn5iL2gqnVY2H1UydE45B2SEauH6HDJoqS34a#arc3
+   {
+	  "animation_url": "ipfs://QmXc1Uw7GATkqBuRiUT7zJJfcwpf73Uo3umqk2L9j2A85y",
+	  "animation_url_mimetype": "video/mp4",
+	  "image": "ipfs://QmQoyrUvBWqvnahz52BAqD7JM9riczafR6H44HZrJih9Lk",
+	  "image_mimetype": "image/jpeg",
+	  "image_integrity": "sha-gpr2H8Z/pGkRLa9U1cPS3SQpG1xNTEpW2mdov7NJxNw=",
+	  "name": "D02-31 (65240 editions)",
+	  "description": "2002 FIFA World Cup Korea/Japan▒ \nUSA 3 - 2 POR, **Goal: Beto 39'**",
+	  "decimals": 0,
+	  "external_url": "https://collect.fifa.com/",
+	  "external_url_mimetype": "text/html",
+	  "properties": {
+		"arc-20": {
+		  "application-id": 872219256
+		},
+		"arc-18": {
+		  "rekey-checked": true
+		}
+	  }
+	}
+   ```
+
+
+
 ### Prerequisites
 
 [Java 17+, Maven 3.x]
