@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import algo.arctang.enums.Action;
 import crypto.forestfish.enums.avm.AVMChain;
+import crypto.forestfish.objects.avm.AlgoIndexerNode;
 import crypto.forestfish.objects.avm.AlgoRelayNode;
 import crypto.forestfish.objects.avm.model.chain.AVMChainInfo;
 import crypto.forestfish.utils.AVMUtils;
@@ -21,11 +22,17 @@ public class Settings {
 
 	// Algorand connectivity
 	private AVMChain chain;
-	private String url;
-	private Integer port;
-	private String authtoken;
-	private String authtoken_key;
 	private AVMChainInfo chainInfo;
+	
+	private String nodeurl;
+	private Integer nodeport;
+	private String nodeauthtoken;
+	private String nodeauthtoken_key;
+	
+	private String idxurl;
+	private Integer idxport;
+	private String idxauthtoken;
+	private String idxauthtoken_key;
 
 	// Action  
 	private Action action;
@@ -50,38 +57,6 @@ public class Settings {
 
 	public void setChain(AVMChain chain) {
 		this.chain = chain;
-	}
-
-	public String getUrl() {
-		return url;
-	}
-
-	public void setUrl(String url) {
-		this.url = url;
-	}
-
-	public String getAuthtoken() {
-		return authtoken;
-	}
-
-	public void setAuthtoken(String authtoken) {
-		this.authtoken = authtoken;
-	}
-
-	public Integer getPort() {
-		return port;
-	}
-
-	public void setPort(Integer port) {
-		this.port = port;
-	}
-
-	public String getAuthtoken_key() {
-		return authtoken_key;
-	}
-
-	public void setAuthtoken_key(String authtoken_key) {
-		this.authtoken_key = authtoken_key;
 	}
 
 	public Action getAction() {
@@ -167,17 +142,32 @@ public class Settings {
 		// Check for local network configuration unless provided as cli params
 		if (true && 
 				(null != this.getChain()) &&
-				(null != this.getUrl()) &&
-				(null != this.getPort()) &&
-				(null != this.getAuthtoken()) &&
-				(null != this.getAuthtoken_key()) &&
+				(null != this.getNodeurl()) &&
+				(null != this.getNodeport()) &&
+				(null != this.getNodeauthtoken()) &&
+				(null != this.getNodeauthtoken_key()) &&
 				true) {
 			
 			// Create chaininfo instance
 			AVMChainInfo chainInfo = AVMUtils.getAVMChainInfo(this.getChain());
+			
+			// Update the relay nodes
 			ArrayList<AlgoRelayNode> nodes = new ArrayList<AlgoRelayNode>();
-			nodes.add(new AlgoRelayNode(this.getUrl(), this.getPort(), this.getAuthtoken(), this.getAuthtoken_key()));
+			nodes.add(new AlgoRelayNode(this.getNodeurl(), this.getNodeport(), this.getNodeauthtoken(), this.getNodeauthtoken_key()));
 			chainInfo.setNodes(nodes);
+			
+			if (true && 
+					(null != this.getIdxurl()) &&
+					(null != this.getIdxport()) &&
+					(null != this.getIdxauthtoken()) &&
+					(null != this.getIdxauthtoken_key()) &&
+					true) {
+				// Update the indexer nodes
+				ArrayList<AlgoIndexerNode> idxnodes = new ArrayList<AlgoIndexerNode>();
+				idxnodes.add(new AlgoIndexerNode(this.getIdxurl(), this.getIdxport(), this.getIdxauthtoken(), this.getIdxauthtoken_key()));
+				chainInfo.setIdxnodes(idxnodes);
+			}
+			
 			this.chainInfo = chainInfo;
 			
 			// Save to local disk if present
@@ -228,6 +218,70 @@ public class Settings {
 		System.out.println(" - nodeport: " + this.getChainInfo().getNodes().get(0).getPort());
 		System.out.println(" - authtoken: " + this.getChainInfo().getNodes().get(0).getAuthtoken());
 		System.out.println(" - authtoken_key: " + this.getChainInfo().getNodes().get(0).getAuthtoken_key());
+	}
+
+	public String getNodeurl() {
+		return nodeurl;
+	}
+
+	public void setNodeurl(String nodeurl) {
+		this.nodeurl = nodeurl;
+	}
+
+	public Integer getNodeport() {
+		return nodeport;
+	}
+
+	public void setNodeport(Integer nodeport) {
+		this.nodeport = nodeport;
+	}
+
+	public String getNodeauthtoken() {
+		return nodeauthtoken;
+	}
+
+	public void setNodeauthtoken(String nodeauthtoken) {
+		this.nodeauthtoken = nodeauthtoken;
+	}
+
+	public String getNodeauthtoken_key() {
+		return nodeauthtoken_key;
+	}
+
+	public void setNodeauthtoken_key(String nodeauthtoken_key) {
+		this.nodeauthtoken_key = nodeauthtoken_key;
+	}
+
+	public String getIdxurl() {
+		return idxurl;
+	}
+
+	public void setIdxurl(String idxurl) {
+		this.idxurl = idxurl;
+	}
+
+	public Integer getIdxport() {
+		return idxport;
+	}
+
+	public void setIdxport(Integer idxport) {
+		this.idxport = idxport;
+	}
+
+	public String getIdxauthtoken() {
+		return idxauthtoken;
+	}
+
+	public void setIdxauthtoken(String idxauthtoken) {
+		this.idxauthtoken = idxauthtoken;
+	}
+
+	public String getIdxauthtoken_key() {
+		return idxauthtoken_key;
+	}
+
+	public void setIdxauthtoken_key(String idxauthtoken_key) {
+		this.idxauthtoken_key = idxauthtoken_key;
 	}
 
 }

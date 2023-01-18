@@ -44,21 +44,23 @@ public class Start {
 		AVMBlockChainConnector connector = new AVMBlockChainConnector(settings.getChainInfo());
 		Long lastRound = AVMUtils.getLastRound(connector);
 		LOGGER.debug("lastRound: " + lastRound);
+		Long lastRoundIndexer = AVMUtils.getIndexerHealthCheck(connector);
+		LOGGER.debug("lastRoundIndexer: " + lastRoundIndexer);
 
 		/**
 		 * QUERY action
 		 */
-		
+
 		// raw output
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isRaw()) {
 			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 			System.out.println(json);
 		}
-		
+
 		// parsed output
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isParsed()) {
 			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-			
+
 			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
 			if (standard == AVMNFTStandard.ARC3) {
 				ARC3Asset arcasset = AVMUtils.getARC3Info(connector, settings.getAssetid());
@@ -73,36 +75,47 @@ public class Start {
 				System.out.println(arcasset.toString());
 			}
 		}
-		
+
 		// arctype output
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isArctype()) {
 			AVMNFTStandard standard = AVMUtils.identifyARCStandard(connector, settings.getAssetid());
 			System.out.println("ASA identified as: " + standard);
 		}
-		
+
 		// metadata
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isMetadata()) {
 			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-			
+
 			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
 			if (standard == AVMNFTStandard.ARC3) {
-				ARC3Asset arcasset = AVMUtils.getARC3Info(connector, settings.getAssetid());
+				ARC3Asset arcasset = AVMUtils.createARC3Asset(json);
 
 				System.out.println("assetURL: " + arcasset.getAssetURL());
 				IPFSConnector ipfs_connector = new IPFSConnector();
-				
+
 				// Grab the metadata
 				String metajson = ipfs_connector.getStringContent(arcasset.getAssetURL());
-				LOGGER.info("metajson:");
 				System.out.println(JSONUtils.prettyPrint(metajson));
 			}
 			if (standard == AVMNFTStandard.ARC19) {
-				ARC19Asset arcasset = AVMUtils.getARC19Info(connector, settings.getAssetid());
-				System.out.println(arcasset.toString());
+				ARC19Asset arcasset = AVMUtils.createARC19Asset(json);
+				String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arcasset.getAssetURL(), arcasset.getReserve().toString());
+
+				if (!"".equals(cid)) {
+					LOGGER.info("Resolved cid from ARC19 template to: " + cid);
+					IPFSConnector ipfs_connector = new IPFSConnector();
+
+					// Grab the metadata
+					String metajson = ipfs_connector.getStringContent("ipfs://" + cid);
+					System.out.println(JSONUtils.prettyPrint(metajson));
+				}
 			}
 			if (standard == AVMNFTStandard.ARC69) {
-				ARC69Asset arcasset = AVMUtils.getARC69Info(connector, settings.getAssetid());
-				System.out.println(arcasset.toString());
+				ARC69Asset arcasset = AVMUtils.createARC69Asset(json);
+				
+				LOGGER.info("Using indexer to fetch latest tx note ..");
+				String latesttxnote = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
+				System.out.println(JSONUtils.prettyPrint(latesttxnote));
 			}
 		}
 
@@ -123,42 +136,58 @@ public class Start {
 		actionOption.setRequired(true);
 		options.addOption(actionOption);
 
-		// url
-		Option urlOption = new Option(null, "nodeurl", true, "The Algorand custom network node URL");
-		options.addOption(urlOption);
+		// nodeurl
+		Option nodeurlOption = new Option(null, "nodeurl", true, "The Algorand custom network node URL");
+		options.addOption(nodeurlOption);
 
-		// port
-		Option portOption = new Option(null, "nodeport", true, "The Algorand custom network node port");
-		options.addOption(portOption);
+		// nodeport
+		Option nodeportOption = new Option(null, "nodeport", true, "The Algorand custom network node port");
+		options.addOption(nodeportOption);
 
-		// authtoken
-		Option authtokenOption = new Option(null, "authtoken", true, "The Algorand custom network node authtoken");
-		options.addOption(authtokenOption);
+		// nodeauthtoken
+		Option nodeauthtokenOption = new Option(null, "nodeauthtoken", true, "The Algorand custom network node authtoken");
+		options.addOption(nodeauthtokenOption);
 
 		// authtoken_key
-		Option authtokenkeyOption = new Option(null, "authtoken_key", true, "The Algorand custom network node authtoken keyname (defaults to X-Algo-API-Token)");
-		options.addOption(authtokenkeyOption);
+		Option nodeauthtokenkeyOption = new Option(null, "nodeauthtoken_key", true, "The Algorand custom network node authtoken keyname (defaults to X-Algo-API-Token)");
+		options.addOption(nodeauthtokenkeyOption);
+		
+		// idxurl
+		Option idxurlOption = new Option(null, "idxurl", true, "The Algorand custom network indexer URL");
+		options.addOption(idxurlOption);
+
+		// idxport
+		Option idxportOption = new Option(null, "idxport", true, "The Algorand custom network indexer port");
+		options.addOption(idxportOption);
+
+		// idxauthtoken
+		Option idxauthtokenOption = new Option(null, "idxauthtoken", true, "The Algorand custom network indexer authtoken");
+		options.addOption(idxauthtokenOption);
+
+		// authtoken_key
+		Option idxauthtokenkeyOption = new Option(null, "idxauthtoken_key", true, "The Algorand custom network indexer authtoken keyname (defaults to X-Algo-API-Token)");
+		options.addOption(idxauthtokenkeyOption);
 
 		// override safemode
 		Option overridesafemodeOption = new Option(null, "override_safemode", false, "Safe mode override (defaults to false)");
 		options.addOption(overridesafemodeOption);
 
 		// confignetwork
-		Option confignetworkOption = new Option(null, "confignetwork", false, "Configure node to use for Algorand network connectivity, requires --url, --port, --authtoken, --authtoken_key");
+		Option confignetworkOption = new Option(null, "confignetwork", false, "Configure node to use for Algorand network connectivity, requires --nodeurl, --nodeport, --nodeauthtoken, --nodeauthtoken_key");
 		options.addOption(confignetworkOption);
-		
+
 		// parsed
 		Option debugOption = new Option(null, "debug", false, "Debug mode");
 		options.addOption(debugOption);
-		
+
 		// assetID
 		Option assetidOption = new Option(null, "assetid", true, "The ASA assetID");
 		options.addOption(assetidOption);
-		
+
 		// raw
 		Option rawOption = new Option(null, "raw", false, "Raw output format");
 		options.addOption(rawOption);
-		
+
 		// parsed
 		Option parsedOption = new Option(null, "parsed", false, "Parsed output format");
 		options.addOption(parsedOption);
@@ -166,11 +195,11 @@ public class Start {
 		// arctype
 		Option arctypeOption = new Option(null, "arctype", false, "ARC type of assetid");
 		options.addOption(arctypeOption);
-		
+
 		// metadata
 		Option metadataOption = new Option(null, "metadata", false, "Grab the JSON metadata of ARC NFT with specified assetid");
 		options.addOption(metadataOption);
-		
+
 		HelpFormatter formatter = new HelpFormatter();
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
@@ -193,10 +222,16 @@ public class Start {
 				if (cmd.getOptionValue("action").equalsIgnoreCase("NETCONFIG")) settings.setAction(Action.NETCONFIG);
 			}
 
-			if (cmd.hasOption("nodeurl")) settings.setUrl(cmd.getOptionValue("nodeurl"));
-			if (cmd.hasOption("nodeport")) settings.setPort(Integer.parseInt(cmd.getOptionValue("nodeport")));
-			if (cmd.hasOption("authtoken")) settings.setAuthtoken(cmd.getOptionValue("authtoken"));
-			if (cmd.hasOption("authtoken_key")) settings.setAuthtoken_key(cmd.getOptionValue("authtoken_key"));
+			if (cmd.hasOption("nodeurl")) settings.setNodeurl(cmd.getOptionValue("nodeurl"));
+			if (cmd.hasOption("nodeport")) settings.setNodeport(Integer.parseInt(cmd.getOptionValue("nodeport")));
+			if (cmd.hasOption("nodeauthtoken")) settings.setNodeauthtoken(cmd.getOptionValue("nodeauthtoken"));
+			if (cmd.hasOption("nodeauthtoken_key")) settings.setNodeauthtoken_key(cmd.getOptionValue("nodeauthtoken_key"));
+			
+			if (cmd.hasOption("idxurl")) settings.setIdxurl(cmd.getOptionValue("idxurl"));
+			if (cmd.hasOption("idxport")) settings.setIdxport(Integer.parseInt(cmd.getOptionValue("idxport")));
+			if (cmd.hasOption("idxauthtoken")) settings.setIdxauthtoken(cmd.getOptionValue("idxauthtoken"));
+			if (cmd.hasOption("idxauthtoken_key")) settings.setIdxauthtoken_key(cmd.getOptionValue("idxauthtoken_key"));
+			
 			if (cmd.hasOption("assetid")) {
 				try {
 					settings.setAssetid(Long.parseLong(cmd.getOptionValue("assetid")));
@@ -212,7 +247,7 @@ public class Start {
 			if (cmd.hasOption("arctype")) settings.setArctype(true);
 			if (cmd.hasOption("debug")) settings.setDebug(true);
 			if (cmd.hasOption("metadata")) settings.setMetadata(true);
-			
+
 			settings.sanityCheck();
 			if (settings.isDebug()) settings.print();
 
@@ -224,6 +259,5 @@ public class Start {
 
 		return settings;
 	}
-
 
 }

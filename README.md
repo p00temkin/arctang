@@ -32,7 +32,7 @@ and simple access to the mediafile url.
   - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0019.md>
   - NFT metadata focused standard. 
   - Enforces off-chain IPFS metadata by using the url field as a template populated by the reserve address field which holds the CID. Easy to update since the reserve address value can be replaced with a single 
-transaction, which in turn changes the metadata. 
+transaction, which in turn changes the metadata. The reserve address is only irrelevant (and thus can be used in this way) for pure NFTs (1 of 1).  
   - Suitable for mutable NFTs intended to transition into immutable NFTs, with complete metadata (+mediafile) changes. 
 
 In common for all of these standards is that the four addresses of an ASA (manager, reservice, freeze and clawback) can be updated by the manager address unless it is set to "". 
@@ -58,7 +58,7 @@ In common for all of these standards is that the four addresses of an ASA (manag
 
 ### User cases
 
-First configure how you connect to the Algorand blockchain.
+First configure how you connect to the Algorand blockchain, which is done by specifying an Algorand node and indexer*:
 
    ```
 	java -jar ./arctang.jar 
@@ -66,15 +66,37 @@ First configure how you connect to the Algorand blockchain.
 	--action NETCONFIG 
 	--nodeurl https://mainnet-algorand.api.purestake.io/ps2 
 	--nodeport 443 
-	--authtoken_key "X-API-Key" 
-	--authtoken <api-key>
+	--nodeauthtoken_key "X-API-Key" 
+	--nodeauthtoken <api-key>
+	--idxurl https://mainnet-algorand.api.purestake.io/idx2
+	--idxport 443
+	--idxauthtoken_key "X-API-Key" 
+	--idxauthtoken <api-key>
    ```
 
-This stores the details in .avm/networks/MAINNET and you no longer need to specify these parameters for every action, only the --chain option. 
+For TESTNET its possible to use the Algorand developer node:
+
+   ```
+	java -jar ./arctang.jar 
+	--chain TESTNET 
+	--action NETCONFIG 
+	--nodeurl https://academy-algod.dev.aws.algodev.network
+	--nodeport 443 
+	--nodeauthtoken_key "X-Algo-API-Token" 
+	--nodeauthtoken 2f3203f21e738a1de6110eba6984f9d03e5a95d7a577b34616854064cf2c0e7b
+	--idxurl https://mainnet-algorand.api.purestake.io/idx2
+	--idxport 443
+	--idxauthtoken_key "X-API-Key" 
+	--idxauthtoken <api-key>
+   ```
+
+This stores the details in .avm/networks/[MAINNET|TESTNET] and you no longer need to specify these parameters for every action, only the --chain option. 
+
+* For EVM users: The indexer is similar to an archive node with various indexes, ie subset of [The Graph](https://thegraph.com/) functionality but using REST calls. 
 
 ### Query the on-chain ASA JSON (raw format)
 
-- ARC3 asset:
+- **ARC3 asset**:
    ```
 	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558 --raw
 
@@ -100,7 +122,7 @@ This stores the details in .avm/networks/MAINNET and you no longer need to speci
 	}
    ```
 
-- ARC19 asset:
+- **ARC19 asset**:
    ```
    java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --raw
 
@@ -123,7 +145,7 @@ This stores the details in .avm/networks/MAINNET and you no longer need to speci
 	}
    ```
   
-- ARC69 asset:
+- **ARC69 asset**:
    ```
    java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078 --raw
 
@@ -147,6 +169,8 @@ This stores the details in .avm/networks/MAINNET and you no longer need to speci
 
    ```
 
+### Query for ASA type
+
 Note that this raw command works against any ASA type and highlights the differences between ARC3, ARC19 and ARC69. If you just want to identify the ARC type of an asset then you can use --arctype as shown below:
    
    ```
@@ -160,22 +184,11 @@ Note that this raw command works against any ASA type and highlights the differe
 	ASA identified as: ARC69
    ```
 
-If you want to parse the raw JSON representation into Java pojos and print a small summary, use --parse as shown below: 
-
-   ```
-   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558 --parsed
-   standard=ARC3 assetID=925168558 unitName=D02-31 assetName="D02-31 #29863" assetURL=ipfs://Qme9e7yjXTn5iL2gqnVY2H1UydE45B2SEauH6HDJoqS34a#arc3
-   
-   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --parsed
-   standard=ARC19 assetID=865610737 unitName=S1ANON assetName="Anon 220" assetURL=template-ipfs://{ipfscid:1:raw:reserve:sha2-256}
-   
-   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078 --parsed
-   standard=ARC69 assetID=490139078 unitName=ALCH0046 assetName="Zip" assetURL=https://gateway.pinata.cloud/ipfs/QmVxZFeLHtbrdtFabb46ToSvegpKyva1jzTkR61a8uM7qT
-   ```
+### Query for ASA metadata
 
 Note that the NFT metadata is fetched differently for each of these ARC standards. Arctang handles this for you when using the --metadata option:
 
-- ARC3 asset:
+- **ARC3 asset:** (fetches metadata directly from IPFS)
    ```
    java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558 --metadata
    .. Updating list of active IPFS gateway URLs ..
@@ -202,8 +215,50 @@ Note that the NFT metadata is fetched differently for each of these ARC standard
 	  }
 	}
    ```
-
-
+   
+- **ARC19 asset**: (fetches metadata from IPFS using CID generated from reserve address)
+   ```
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --metadata
+   .. Resolved cid from ARC19 template to: bafkreihxpwumraqrlafdxldjitba7gkvwh2vaos4z6uscbodopqnee6gpa
+   .. Updating list of active IPFS gateway URLs ..
+   .. Nr of active IPFS gateways: 18
+   .. Attempting to fetch ipfs://bafkreihxpwumraqrlafdxldjitba7gkvwh2vaos4z6uscbodopqnee6gpa
+	{
+	  "assetName": "Anon 220",
+	  "unitName": "S1ANON",
+	  "description": "",
+	  "image": "ipfs://bafybeidhlz7iznf5rpxwj5xfukppvkizxf4yp3cnpipjcmvbjkg7rwwwau",
+	  "external_url": "",
+	  "properties": {
+		"background color": "grey",
+		"background style": "solid",
+		"mask color": "grey",
+		"skin tone": "dark"
+	  },
+	  "royalty": 0.05,
+	  "register": "Minted by KinnDAO"
+	}
+   ```
+- **ARC69 asset**: (fetches metadata from the note of the latest assetconfig tx, using the indexer)
+   ```
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078 --metadata
+   .. Using indexer to fetch latest tx note ..
+	{
+	  "standard": "arc69",
+	  "description": "Zip",
+	  "external_url": "Alchemon.net",
+	  "mime_type": "image/png",
+	  "properties": {
+		"Number": "0046",
+		"Rarity": "Common",
+		"Type": "Electric",
+		"Strength": "70",
+		"Health": "58",
+		"Speed": "67",
+		"Defense": "55"
+	  }
+	}
+   ```
 
 ### Prerequisites
 
@@ -232,7 +287,22 @@ Note that the NFT metadata is fetched differently for each of these ARC standard
 Options:
 
    ```
-   <TBD>
+   --chain
+   --action
+   --nodeurl
+   --nodeport
+   --nodeauthtoken
+   --nodeauthtoken_key
+   --idxurl
+   --idxport
+   --idxauthtoken
+   --idxauthtoken_key
+   --assetid
+   --parsed
+   --raw
+   --arctype
+   --debug
+   --metadata
    ```
 
 ### Additional useful options/resources
@@ -261,6 +331,7 @@ Ethereum influenced EIPs:
 - <https://docs.opensea.io/docs/metadata-standards>
 
 Misc:
+- <https://hex2algo.vercel.app>
 - <https://nftfactory.org/blog/algorand-nft-assembly-line>
 - <https://stackoverflow.com/questions/74052032/algorand-arc-19-and-arc-69-what-exaclty-is-the-difference>
 - <https://www.techdreams.org/crypto-currency/algorand-arc3-and-arc69-standard-nfts-overview/12382-20220118>
