@@ -20,21 +20,19 @@ the ASA needs to comply with one of the current Algorand NFT-related ARCs. An AR
   - The url field points to the NFT metadata. The metadata supports a schema which can have associated integrity and mimetype fields. 
   - Suitable for immutable NFTs with large metadata files (>1KB size of JSON) and multiple off-chain data references.
 
-- **ARC69**
-  - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0069.md>
-  - NFT mediafile focused standard. 
-  - The url field points to the NFT digital asset file. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB 
-the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction 
-and simple access to the mediafile url.
-  - Suitable for mutable NFTs where the mediafile is locked, easily accessed, but the compact metadata associated with it changes over time.
- 
 - **ARC19**
   - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0019.md>
   - NFT metadata focused standard. 
-  - Enforces off-chain IPFS metadata by using the url field as a template populated by the reserve address field which holds the CID. Easy to update since the reserve address value can be replaced with a single 
-transaction, which in turn changes the metadata. The reserve address is only irrelevant (and thus can be used in this way) for pure NFTs (1 of 1).  
+  - Enforces off-chain IPFS metadata by using the url field as a template populated by the reserve address field which holds the CID. Easy to update since the reserve address value can be replaced with a single transaction, which in turn changes the metadata. The reserve address is only irrelevant (and thus can be used in this way) for pure NFTs (1 of 1).
   - Suitable for mutable NFTs intended to transition into immutable NFTs, with complete metadata (+mediafile) changes. 
 
+- **ARC69**
+  - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0069.md>
+  - NFT mediafile focused standard. 
+  - The url field points to the NFT digital asset file. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction 
+and simple access to the mediafile url.
+  - Suitable for mutable NFTs where the mediafile is locked, easily accessed, but the compact metadata associated with it changes over time.
+ 
 In common for all of these standards is that the four addresses of an ASA (manager, reservice, freeze and clawback) can be updated by the manager address unless it is set to "". 
 
 ### Supporting ARCs:
@@ -187,6 +185,7 @@ Note that the NFT metadata is fetched differently for each of these ARC standard
 - **ARC3 asset:** (fetches metadata using IPFS/HTTPS specified 'url')
    ```
    java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 387411719 --metadata
+   
    .. Updating list of active IPFS gateway URLs ..
    .. Nr of active IPFS gateways: 18
    .. Attempting to fetch ipfs://Qme9e7yjXTn5iL2gqnVY2H1UydE45B2SEauH6HDJoqS34a#arc3
@@ -223,6 +222,7 @@ Note that the NFT metadata is fetched differently for each of these ARC standard
 - **ARC19 asset**: (fetches metadata from IPFS using CID generated from reserve address)
    ```
    java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --metadata
+   
    .. Resolved cid from ARC19 template to: bafkreihxpwumraqrlafdxldjitba7gkvwh2vaos4z6uscbodopqnee6gpa
    .. Updating list of active IPFS gateway URLs ..
    .. Nr of active IPFS gateways: 18
@@ -247,6 +247,7 @@ Note that the NFT metadata is fetched differently for each of these ARC standard
 - **ARC69 asset**: (fetches metadata from the note of the latest assetconfig tx, using the indexer node)
    ```
    java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078 --metadata
+   
    .. Using indexer to fetch latest tx note ..
 	{
 	  "standard": "arc69",
@@ -293,6 +294,19 @@ For ARC3 ASAs we can verify the integrity of the NFT by checking that the metada
    ```
 The concept of string similarity in the ARC standard is handled by thresholds using LCS (Longest Common Subsequence). The ARC3 standard is the most expressive in terms of integrity checksums, but the same also works for ARC19 and ARC69:
 
+- **ARC19 asset**: 
+   ```
+   java -jar ./arctang.jar --chain MAINNET --action VERIFY --assetid 865610737
+   
+   .. xxxxx
+   ```
+
+- **ARC69 asset**:
+   ```
+   java -jar ./arctang.jar --chain MAINNET --action VERIFY --assetid 490139078
+   
+   .. xxxxx
+   ```
 
 ### Prerequisites
 
