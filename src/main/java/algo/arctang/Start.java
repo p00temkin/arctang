@@ -10,6 +10,8 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.algorand.algosdk.crypto.Address;
+
 import algo.arctang.enums.Action;
 import crypto.forestfish.enums.avm.AVMChain;
 import crypto.forestfish.enums.avm.AVMNFTStandard;
@@ -17,10 +19,15 @@ import crypto.forestfish.objects.avm.connector.AVMBlockChainConnector;
 import crypto.forestfish.objects.avm.model.nft.ARC19Asset;
 import crypto.forestfish.objects.avm.model.nft.ARC3Asset;
 import crypto.forestfish.objects.avm.model.nft.ARC69Asset;
+import crypto.forestfish.objects.avm.model.nft.ASAVerificationStatus;
+import crypto.forestfish.objects.avm.model.nft.metadata.ARC3MetaData;
 import crypto.forestfish.objects.ipfs.connector.IPFSConnector;
 import crypto.forestfish.utils.AVMUtils;
+import crypto.forestfish.utils.CryptUtils;
 import crypto.forestfish.utils.JSONUtils;
+import crypto.forestfish.utils.StringsUtils;
 import crypto.forestfish.utils.SystemUtils;
+import io.ipfs.multihash.Multihash;
 
 public class Start {
 
@@ -118,7 +125,25 @@ public class Start {
 				System.out.println(JSONUtils.prettyPrint(latesttxnote));
 			}
 		}
+		
+		// verify
+		if ((settings.getAction() == Action.VERIFY) && (null != settings.getAssetid())) {
+			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 
+			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
+			if (standard == AVMNFTStandard.ARC3) {
+				ARC3Asset arcasset = AVMUtils.createARC3Asset(json);
+				IPFSConnector ipfs_connector = new IPFSConnector();
+
+				// Grab the metadata
+				String metajson = ipfs_connector.getStringContent(arcasset.getAssetURL());
+				ARC3MetaData arc3metadata = JSONUtils.createARC3MetaData(metajson);
+				
+				ASAVerificationStatus vstatus = AVMUtils.verifyARC3Asset(ipfs_connector, arcasset, arc3metadata, metajson);
+				System.out.println(vstatus.toString());
+			}
+		}
+		
 	}
 
 	private static Settings parseCliArgs(String[] args) {

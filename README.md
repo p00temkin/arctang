@@ -96,26 +96,24 @@ Note for EVM users: The indexer is similar to an archive node with various index
 
 - **ARC3 asset**:
    ```
-	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558 --raw
+	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 387411719 --raw
 
-   {
-	  "index" : 925168558,
+	{
+	  "index" : 387411719,
 	  "params" : {
-		"clawback" : "X6MNR4AVJQEMJRHAPZ6F4O4SVDIYN67ZRMD2O3ULPY4QFMANQNZOEYHODE",
-		"creator" : "X6MNR4AVJQEMJRHAPZ6F4O4SVDIYN67ZRMD2O3ULPY4QFMANQNZOEYHODE",
+		"creator" : "TEST7FVOHRUCBH25UARE34XE5PVKKDANYWAPCLPQNGSOTLNBYC64C67B74",
 		"decimals" : 0,
-		"default-frozen" : true,
-		"freeze" : "EMWPXNULSR3US737FFOSEJJB4B3R5BJQRYCVYPJSP7IUBRXUN3LF4MG2NA",
-		"manager" : "EMWPXNULSR3US737FFOSEJJB4B3R5BJQRYCVYPJSP7IUBRXUN3LF4MG2NA",
-		"metadata-hash" : "WiPFje9tLPWl1SBB49MB3GBdr9QR1cIwoVg+6CyrhbI=",
-		"name" : "D02-31 #29863",
-		"name-b64" : "RDAyLTMxICMyOTg2Mw==",
-		"reserve" : "X6MNR4AVJQEMJRHAPZ6F4O4SVDIYN67ZRMD2O3ULPY4QFMANQNZOEYHODE",
+		"default-frozen" : false,
+		"manager" : "TEST7FVOHRUCBH25UARE34XE5PVKKDANYWAPCLPQNGSOTLNBYC64C67B74",
+		"metadata-hash" : "NWgQYgRRTYAb7p28MJDhQLe5adSeZivMUBGl/cZtdWM=",
+		"name" : "ARC3",
+		"name-b64" : "QVJDMw==",
+		"reserve" : "TEST7FVOHRUCBH25UARE34XE5PVKKDANYWAPCLPQNGSOTLNBYC64C67B74",
 		"total" : 1,
-		"unit-name" : "D02-31",
-		"unit-name-b64" : "RDAyLTMx",
-		"url" : "ipfs://Qme9e7yjXTn5iL2gqnVY2H1UydE45B2SEauH6HDJoqS34a#arc3",
-		"url-b64" : "aXBmczovL1FtZTllN3lqWFRuNWlMMmdxblZZMkgxVXlkRTQ1QjJTRWF1SDZIREpvcVMzNGEjYXJjMw=="
+		"unit-name" : "NFTARC3",
+		"unit-name-b64" : "TkZUQVJDMw==",
+		"url" : "ipfs://bafkreibvnaigebcrjwabx3u5xqyjbykaw64wtve6myv4yuarux64m3lvmm#arc3",
+		"url-b64" : "aXBmczovL2JhZmtyZWlidm5haWdlYmNyandhYngzdTV4cXlqYnlrYXc2NHd0dmU2bXl2NHl1YXJ1eDY0bTNsdm1tI2FyYzM="
 	  }
 	}
    ```
@@ -172,7 +170,7 @@ Note for EVM users: The indexer is similar to an archive node with various index
 Note that this raw command works against any ASA type and highlights the differences between ARC3, ARC19 and ARC69. If you just want to identify the ARC type of an asset then you can use --arctype as shown below:
    
    ```
-	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558 --arctype
+	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 387411719 --arctype
 	ASA identified as: ARC3
 		
 	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --arctype
@@ -188,27 +186,35 @@ Note that the NFT metadata is fetched differently for each of these ARC standard
 
 - **ARC3 asset:** (fetches metadata using IPFS/HTTPS specified 'url')
    ```
-   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 925168558 --metadata
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 387411719 --metadata
    .. Updating list of active IPFS gateway URLs ..
    .. Nr of active IPFS gateways: 18
    .. Attempting to fetch ipfs://Qme9e7yjXTn5iL2gqnVY2H1UydE45B2SEauH6HDJoqS34a#arc3
-   {
-	  "animation_url": "ipfs://QmXc1Uw7GATkqBuRiUT7zJJfcwpf73Uo3umqk2L9j2A85y",
-	  "animation_url_mimetype": "video/mp4",
-	  "image": "ipfs://QmQoyrUvBWqvnahz52BAqD7JM9riczafR6H44HZrJih9Lk",
-	  "image_mimetype": "image/jpeg",
-	  "image_integrity": "sha-gpr2H8Z/pGkRLa9U1cPS3SQpG1xNTEpW2mdov7NJxNw=",
-	  "name": "D02-31 (65240 editions)",
-	  "description": "2002 FIFA World Cup Korea/Japan▒ \nUSA 3 - 2 POR, **Goal: Beto 39'**",
-	  "decimals": 0,
-	  "external_url": "https://collect.fifa.com/",
-	  "external_url_mimetype": "text/html",
+	{
+	  "name": "ARC3",
+	  "description": "First ARC3 NFT?",
+	  "image": "ipfs://bafkreibsgazs6waapitr4rvwsd75z5jgcxryiqacllrexszaoha2ph6voq",
+	  "image_integrity": "sha256-MjAzL1gAeiceRraQ/9z1JhXjhEACWuJLyyBxwaef1XQ=",
+	  "image_mimetype": "image/png",
+	  "animation_url": "ipfs://bafkreibnr6etiygfl6suxntwpfkzb6bbuuirlf6jww76b4yglfxqgywiw4",
+	  "animation_url_integrity": "sha256-LY+JNGDFX6VLtnZ5VZD4IaURFZfJtb/g8wZZbwNiyLc=",
+	  "animation_url_mimetype": "image/gif",
 	  "properties": {
-		"arc-20": {
-		  "application-id": 872219256
+		"fun_level": {
+		  "name": "Fun level",
+		  "value": 1000000
 		},
-		"arc-18": {
-		  "rekey-checked": true
+		"colors": {
+		  "name": "Colors",
+		  "value": [
+			"Black",
+			"Yellow",
+			"White"
+		  ]
+		},
+		"text": {
+		  "name": "Text",
+		  "value": "ARC3"
 		}
 	  }
 	}
@@ -258,6 +264,35 @@ Note that the NFT metadata is fetched differently for each of these ARC standard
 	  }
 	}
    ```
+
+### Verify ASA content and metadata
+
+For ARC3 ASAs we can verify the integrity of the NFT by checking that the metadata JSON is intact and that the integrity checksum fields of the metadata are inteact (ie the actual linked mediafiles) . This can be achived with with VERIFY action which provides an ARC compliance summary along with overview of potential issues found:
+
+- **ARC3 asset:**
+   ```
+   java -jar ./arctang.jar --chain MAINNET --action VERIFY --assetid 387411719
+   
+   .. Updating list of active IPFS gateway URLs ..
+   .. Nr of active IPFS gateways: 18
+   .. Attempting to fetch ipfs://bafkreibvnaigebcrjwabx3u5xqyjbykaw64wtve6myv4yuarux64m3lvmm#arc3
+   .. Attempting to fetch ipfs://bafkreibsgazs6waapitr4rvwsd75z5jgcxryiqacllrexszaoha2ph6voq
+   .. Attempting to fetch ipfs://bafkreibnr6etiygfl6suxntwpfkzb6bbuuirlf6jww76b4yglfxqgywiw4
+	Verified     : true
+	Score [0-10] : 8
+	-----------------------------------
+	Warnings:
+	 [#1] Manager address is still set, NFT is mutable
+	Verified parameters:
+	 [+] asset URL endswith #arc3 and name is not fixed to arc3 or contains @arc3
+	 [+] asset URL uses IPFS
+	 [+] Calculated metadata hash matches the ASA specified hash (NWgQYgRRTYAb7p28MJDhQLe5adSeZivMUBGl/cZtdWM=)
+	 [+] Metadata name (ARC3) related the ASA specified unit name (NFTARC3)
+	 [+] Calculated image_integrity hash matches the metadata specified hash (MjAzL1gAeiceRraQ/9z1JhXjhEACWuJLyyBxwaef1XQ=)
+	 [+] Calculated animation_url_integrity hash matches the metadata specified hash (LY+JNGDFX6VLtnZ5VZD4IaURFZfJtb/g8wZZbwNiyLc=)
+   ```
+The concept of string similarity in the ARC standard is handled by thresholds using LCS (Longest Common Subsequence). The ARC3 standard is the most expressive in terms of integrity checksums, but the same also works for ARC19 and ARC69:
+
 
 ### Prerequisites
 
