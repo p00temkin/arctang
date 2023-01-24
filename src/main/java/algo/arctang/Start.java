@@ -21,6 +21,7 @@ import crypto.forestfish.objects.avm.model.nft.ARC3Asset;
 import crypto.forestfish.objects.avm.model.nft.ARC69Asset;
 import crypto.forestfish.objects.avm.model.nft.ASAVerificationStatus;
 import crypto.forestfish.objects.avm.model.nft.metadata.ARC3MetaData;
+import crypto.forestfish.objects.avm.model.nft.metadata.ARCMetaData;
 import crypto.forestfish.objects.ipfs.connector.IPFSConnector;
 import crypto.forestfish.utils.AVMUtils;
 import crypto.forestfish.utils.CryptUtils;
@@ -141,6 +142,22 @@ public class Start {
 				
 				ASAVerificationStatus vstatus = AVMUtils.verifyARC3Asset(ipfs_connector, arcasset, arc3metadata, metajson);
 				System.out.println(vstatus.toString());
+			}
+			if (standard == AVMNFTStandard.ARC19) {
+				ARC19Asset arcasset = AVMUtils.createARC19Asset(json);
+				String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arcasset.getAssetURL(), arcasset.getReserve().toString());
+
+				if (!"".equals(cid)) {
+					LOGGER.info("Resolved cid from ARC19 template to: " + cid);
+					IPFSConnector ipfs_connector = new IPFSConnector();
+
+					// Grab the metadata
+					String metajson = ipfs_connector.getStringContent("ipfs://" + cid);
+					ARCMetaData arcmetadata = JSONUtils.createARCMetaData(metajson);
+					
+					ASAVerificationStatus vstatus = AVMUtils.verifyARC19Asset(ipfs_connector, arcasset, arcmetadata, metajson);
+					System.out.println(vstatus.toString());
+				}
 			}
 		}
 		

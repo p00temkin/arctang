@@ -298,7 +298,21 @@ The concept of string similarity in the ARC standard is handled by thresholds us
    ```
    java -jar ./arctang.jar --chain MAINNET --action VERIFY --assetid 865610737
    
-   .. xxxxx
+   .. Updating list of active IPFS gateway URLs ..
+   .. Nr of active IPFS gateways: 17
+   .. Attempting to fetch ipfs://bafkreihxpwumraqrlafdxldjitba7gkvwh2vaos4z6uscbodopqnee6gpa
+	Verified     : true
+	Score [0-10] : 6
+	-----------------------------------
+	Warnings:
+	 [#1] Manager address is still set, NFT is mutable
+	 [#2] No unit name value specified in the ASA
+	Verified parameters:
+	 [+] ARC19 ASA url template is 'ipfscid'
+	 [+] ARC19 ASA url specifies IPFS CID version '0' or '1'
+	 [+] ARC19 ASA url specifies valid multicodec
+	 [+] ARC19 ASA url fieldname is 'reserve'
+	 [+] ARC19 ASA url hashtype is 'sha2-256'
    ```
 
 - **ARC69 asset**:
