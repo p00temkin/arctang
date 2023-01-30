@@ -344,7 +344,7 @@ In order to transfer or mint ASAs we need an Algorand account to work from. We c
 	Generated wallet from mnemonic with name bob with address ..
    ```
 
-This creates a walletfile in your local .avm/wallets folder (with the walletname 'bob' in this case) and can be used for future mint/reconfig/transfers. 
+This creates a walletfile in your local .avm/wallets folder (with the walletname 'bob' in this case) which can be used for future mint/reconfig/transfers. 
 
 ### Prerequisites
 
@@ -389,6 +389,8 @@ Options:
    --arctype
    --debug
    --metadata
+   --walletname
+   --mnemonic
    ```
 
 ### Additional useful options/resources
