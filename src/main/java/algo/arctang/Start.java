@@ -40,8 +40,8 @@ public class Start {
 		Settings settings = null;
 		settings = parseCliArgs(args);
 
-		// Early exit if NETCONFIG
-		if (settings.getAction() == Action.NETCONFIG) {
+		// Early exit if NETCONFIG/WALLETCONFIG actions
+		if ((settings.getAction() == Action.NETCONFIG) || (settings.getAction() == Action.WALLETCONFIG)){
 			LOGGER.info("Exiting ..");
 			SystemUtils.halt();
 		}
@@ -133,19 +133,19 @@ public class Start {
 
 			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
 			if (standard == AVMNFTStandard.ARC3) {
-				ARC3Asset arcasset = AVMUtils.createARC3Asset(json);
+				ARC3Asset arc3asset = AVMUtils.createARC3Asset(json);
 				IPFSConnector ipfs_connector = new IPFSConnector();
 
 				// Grab the metadata
-				String metajson = ipfs_connector.getStringContent(arcasset.getAssetURL());
+				String metajson = ipfs_connector.getStringContent(arc3asset.getAssetURL());
 				ARC3MetaData arc3metadata = JSONUtils.createARC3MetaData(metajson);
 				
-				ASAVerificationStatus vstatus = AVMUtils.verifyARC3Asset(ipfs_connector, arcasset, arc3metadata, metajson);
+				ASAVerificationStatus vstatus = AVMUtils.verifyARC3Asset(ipfs_connector, arc3asset, arc3metadata, metajson);
 				System.out.println(vstatus.toString());
 			}
 			if (standard == AVMNFTStandard.ARC19) {
-				ARC19Asset arcasset = AVMUtils.createARC19Asset(json);
-				String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arcasset.getAssetURL(), arcasset.getReserve().toString());
+				ARC19Asset arc19asset = AVMUtils.createARC19Asset(json);
+				String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arc19asset.getAssetURL(), arc19asset.getReserve().toString());
 
 				if (!"".equals(cid)) {
 					LOGGER.info("Resolved cid from ARC19 template to: " + cid);
@@ -155,9 +155,21 @@ public class Start {
 					String metajson = ipfs_connector.getStringContent("ipfs://" + cid);
 					ARCMetaData arcmetadata = JSONUtils.createARCMetaData(metajson);
 					
-					ASAVerificationStatus vstatus = AVMUtils.verifyARC19Asset(ipfs_connector, arcasset, arcmetadata, metajson);
+					ASAVerificationStatus vstatus = AVMUtils.verifyARC19Asset(ipfs_connector, arc19asset, arcmetadata, metajson);
 					System.out.println(vstatus.toString());
 				}
+			}
+			if (standard == AVMNFTStandard.ARC69) {
+				ARC69Asset arcasset = AVMUtils.createARC69Asset(json);
+				
+				// Grab the metadata
+				String metajson = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
+				ARCMetaData arcmetadata = JSONUtils.createARCMetaData(metajson);
+				
+				IPFSConnector ipfs_connector = new IPFSConnector();
+
+				ASAVerificationStatus vstatus = AVMUtils.verifyARC69Asset(ipfs_connector, arcasset, arcmetadata, metajson);
+				System.out.println(vstatus.toString());
 			}
 		}
 		
@@ -170,7 +182,6 @@ public class Start {
 
 		// chain
 		Option chainOption = new Option(null, "chain", true, "Chain, MAINNET, BETANET or TESTNET");
-		chainOption.setRequired(true);
 		options.addOption(chainOption);
 
 		// action
@@ -241,6 +252,14 @@ public class Start {
 		// metadata
 		Option metadataOption = new Option(null, "metadata", false, "Grab the JSON metadata of ARC NFT with specified assetid");
 		options.addOption(metadataOption);
+		
+		// mnemonic
+		Option mnemonicOption = new Option(null, "mnemonic", true, "Mnemonic to use for creating an Algorand account. Use with --walletname");
+		options.addOption(mnemonicOption);
+		
+		// walletname
+		Option walletnameOption = new Option(null, "walletname", true, "Wallet name to use for specified action");
+		options.addOption(walletnameOption);
 
 		HelpFormatter formatter = new HelpFormatter();
 		CommandLineParser parser = new DefaultParser();
@@ -260,7 +279,7 @@ public class Start {
 				if (cmd.getOptionValue("action").equalsIgnoreCase("TRANSFER")) settings.setAction(Action.TRANSFER);
 				if (cmd.getOptionValue("action").equalsIgnoreCase("MINT")) settings.setAction(Action.MINT);
 				if (cmd.getOptionValue("action").equalsIgnoreCase("RECONFIG")) settings.setAction(Action.RECONFIG);
-				if (cmd.getOptionValue("action").equalsIgnoreCase("EVM_BACKUP")) settings.setAction(Action.EVM_BACKUP);
+				if (cmd.getOptionValue("action").equalsIgnoreCase("WALLETCONFIG")) settings.setAction(Action.WALLETCONFIG);
 				if (cmd.getOptionValue("action").equalsIgnoreCase("NETCONFIG")) settings.setAction(Action.NETCONFIG);
 			}
 
@@ -290,6 +309,9 @@ public class Start {
 			if (cmd.hasOption("debug")) settings.setDebug(true);
 			if (cmd.hasOption("metadata")) settings.setMetadata(true);
 
+			if (cmd.hasOption("walletname")) settings.setWalletname(cmd.getOptionValue("walletname"));
+			if (cmd.hasOption("mnemonic")) settings.setMnemonic(cmd.getOptionValue("mnemonic"));
+			
 			settings.sanityCheck();
 			if (settings.isDebug()) settings.print();
 

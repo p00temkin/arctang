@@ -6,6 +6,6 @@ public enum Action {
 	TRANSFER,
 	MINT,
 	RECONFIG,
-	EVM_BACKUP,
+	WALLETCONFIG,
 	NETCONFIG
 }

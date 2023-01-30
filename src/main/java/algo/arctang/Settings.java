@@ -45,6 +45,9 @@ public class Settings {
 	private boolean arctype = false;
 	private boolean metadata = false;
 	
+	private String walletname;
+	private String mnemonic;
+	
 	private boolean debug = false;
 	
 	public Settings() {
@@ -132,72 +135,100 @@ public class Settings {
 	}
 
 	public void sanityCheck() {
+		
+		if (false ||
+				(this.getAction() == Action.QUERY) ||
+				(this.getAction() == Action.MINT) ||
+				(this.getAction() == Action.RECONFIG) ||
+				(this.getAction() == Action.TRANSFER) ||
+				(this.getAction() == Action.VERIFY) ||
+				(this.getAction() == Action.NETCONFIG) ||
+				false) {
 
-		// chain
-		if (null == this.getChain()) {
-			LOGGER.error("You need to specify a chain, MAINNET, BETANET or TESTNET");
-			SystemUtils.halt();
-		}
-
-		// Check for local network configuration unless provided as cli params
-		if (true && 
-				(null != this.getChain()) &&
-				(null != this.getNodeurl()) &&
-				(null != this.getNodeport()) &&
-				(null != this.getNodeauthtoken()) &&
-				(null != this.getNodeauthtoken_key()) &&
-				true) {
-			
-			// Create chaininfo instance
-			AVMChainInfo chainInfo = AVMUtils.getAVMChainInfo(this.getChain());
-			
-			// Update the relay nodes
-			ArrayList<AlgoRelayNode> nodes = new ArrayList<AlgoRelayNode>();
-			nodes.add(new AlgoRelayNode(this.getNodeurl(), this.getNodeport(), this.getNodeauthtoken(), this.getNodeauthtoken_key()));
-			chainInfo.setNodes(nodes);
-			
-			if (true && 
-					(null != this.getIdxurl()) &&
-					(null != this.getIdxport()) &&
-					(null != this.getIdxauthtoken()) &&
-					(null != this.getIdxauthtoken_key()) &&
-					true) {
-				// Update the indexer nodes
-				ArrayList<AlgoIndexerNode> idxnodes = new ArrayList<AlgoIndexerNode>();
-				idxnodes.add(new AlgoIndexerNode(this.getIdxurl(), this.getIdxport(), this.getIdxauthtoken(), this.getIdxauthtoken_key()));
-				chainInfo.setIdxnodes(idxnodes);
+			// require chain
+			if (null == this.getChain()) {
+				LOGGER.error("You need to specify a chain, MAINNET, BETANET or TESTNET");
+				SystemUtils.halt();
 			}
 			
-			this.chainInfo = chainInfo;
-			
-			// Save to local disk if present
-			if (this.getAction() == Action.NETCONFIG) {
-				String json = JSONUtils.createJSONFromAVMChainInfo(chainInfo);
-				FilesUtils.createFolderUnlessExists(".avm");
-				FilesUtils.createFolderUnlessExists(".avm/networks");
+			// Check for local network configuration unless provided as cli params
+			if (true && 
+					(null != this.getChain()) &&
+					(null != this.getNodeurl()) &&
+					(null != this.getNodeport()) &&
+					(null != this.getNodeauthtoken()) &&
+					(null != this.getNodeauthtoken_key()) &&
+					true) {
+				
+				// Create chaininfo instance
+				AVMChainInfo chainInfo = AVMUtils.getAVMChainInfo(this.getChain());
+				
+				// Update the relay nodes
+				ArrayList<AlgoRelayNode> nodes = new ArrayList<AlgoRelayNode>();
+				nodes.add(new AlgoRelayNode(this.getNodeurl(), this.getNodeport(), this.getNodeauthtoken(), this.getNodeauthtoken_key()));
+				chainInfo.setNodes(nodes);
+				
+				if (true && 
+						(null != this.getIdxurl()) &&
+						(null != this.getIdxport()) &&
+						(null != this.getIdxauthtoken()) &&
+						(null != this.getIdxauthtoken_key()) &&
+						true) {
+					// Update the indexer nodes
+					ArrayList<AlgoIndexerNode> idxnodes = new ArrayList<AlgoIndexerNode>();
+					idxnodes.add(new AlgoIndexerNode(this.getIdxurl(), this.getIdxport(), this.getIdxauthtoken(), this.getIdxauthtoken_key()));
+					chainInfo.setIdxnodes(idxnodes);
+				}
+				
+				this.chainInfo = chainInfo;
+				
+				// Save to local disk if present
+				if (this.getAction() == Action.NETCONFIG) {
+					String json = JSONUtils.createJSONFromAVMChainInfo(chainInfo);
+					FilesUtils.createFolderUnlessExists(".avm");
+					FilesUtils.createFolderUnlessExists(".avm/networks");
+					File f = new File(".avm/networks/" + chain.toString());
+					if (!f.exists()) {
+						LOGGER.info("Flushing chainInfo to .avm/networks/" + chain.toString());
+						FilesUtils.writeToFileUNIXNoException(json, ".avm/networks/" + chain.toString());
+					}
+				}
+				
+			} else {
+				// Check if we can get the chain details from 
+				LOGGER.debug("Checking for chainInfo details at .avm/networks/" + chain.toString());
 				File f = new File(".avm/networks/" + chain.toString());
-				if (!f.exists()) {
-					LOGGER.info("Flushing chainInfo to .avm/networks/" + chain.toString());
-					FilesUtils.writeToFileUNIXNoException(json, ".avm/networks/" + chain.toString());
+				if (f.exists()) {
+					String json = FilesUtils.readStringFromFile(".avm/networks/" + chain.toString());
+					AVMChainInfo chainInfo = JSONUtils.createAVMChainInfo(json);
+					this.chainInfo = chainInfo;
+				} else {
+					LOGGER.error("Need chainInfo for " + this.getChain() + ", please consider using --confignetwork since no public nodes are available");
+					SystemUtils.halt();
 				}
 			}
 			
-		} else {
-			// Check if we can get the chain details from 
-			LOGGER.debug("Checking for chainInfo details at .avm/networks/" + chain.toString());
-			File f = new File(".avm/networks/" + chain.toString());
-			if (f.exists()) {
-				String json = FilesUtils.readStringFromFile(".avm/networks/" + chain.toString());
-				AVMChainInfo chainInfo = JSONUtils.createAVMChainInfo(json);
-				this.chainInfo = chainInfo;
-			} else {
-				LOGGER.error("Need chainInfo for " + this.getChain() + ", please consider using --confignetwork since no public nodes are available");
-				SystemUtils.halt();
-			}
 		}
 		
 		if ((this.getAction() == Action.QUERY) && (null == this.getAssetid())) {
 			LOGGER.error("Need to provide --assetid when using QUERY action");
+			SystemUtils.halt();
+		}
+		
+
+		if ((this.getAction() == Action.WALLETCONFIG)) {
+			
+			if (null == this.getMnemonic()) {
+				LOGGER.error("Need to provide --mnemonic when using WALLETCONFIG action");
+				SystemUtils.halt();
+			}
+			if (null == this.getWalletname()) {
+				LOGGER.error("Need to provide --walletname when using WALLETCONFIG action");
+				SystemUtils.halt();
+			}
+			
+			boolean created = AVMUtils.createWalletWithName(this.getWalletname(), this.getMnemonic());
+			if (!created) LOGGER.error("Unable to create wallet with name " + this.getWalletname());
 			SystemUtils.halt();
 		}
 
@@ -282,6 +313,22 @@ public class Settings {
 
 	public void setIdxauthtoken_key(String idxauthtoken_key) {
 		this.idxauthtoken_key = idxauthtoken_key;
+	}
+
+	public String getWalletname() {
+		return walletname;
+	}
+
+	public void setWalletname(String walletname) {
+		this.walletname = walletname;
+	}
+
+	public String getMnemonic() {
+		return mnemonic;
+	}
+
+	public void setMnemonic(String mnemonic) {
+		this.mnemonic = mnemonic;
 	}
 
 }

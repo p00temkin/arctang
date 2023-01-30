@@ -1,6 +1,6 @@
 ## ARCTANG
 
-Swiss army knife to query/validate/transfer/update/mint/backup NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) Algorand support (part of this project). 
+Swiss army knife to query/validate/transfer/mint/update NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) Algorand support (part of this project). 
 
 ![alt text](https://github.com/p00temkin/arctang/blob/master/img/arctang_r7.png?raw=true)
 
@@ -319,8 +319,32 @@ The concept of string similarity in the ARC standard is handled by thresholds us
    ```
    java -jar ./arctang.jar --chain MAINNET --action VERIFY --assetid 490139078
    
-   .. xxxxx
+   .. Updating list of active IPFS gateway URLs ..
+   .. Nr of active IPFS gateways: 18
+    Verified     : true
+	Score [0-10] : 4
+	-----------------------------------
+	Warnings:
+	 [#1] Manager address is still set, NFT is mutable
+	 [#2] ARC69 ASA media URL uses https:// instead of IPFS
+	 [#3] ARC69 ASA media URL does not specify media type using # fragment identifier
+	 [#4] No unit name value specified in the ASA
    ```
+
+### Transfer an ASA Asset
+
+In order to transfer or mint ASAs we need an Algorand account to work from. We can create a named wallet account using the WALLETCONFIG action
+
+   ```
+	java -jar ./arctang.jar 
+	--action WALLETCONFIG 
+	--walletname bob
+	--mnemonic "xxx xxx xxx .."
+	
+	Generated wallet from mnemonic with name bob with address ..
+   ```
+
+This creates a walletfile in your local .avm/wallets folder (with the walletname 'bob' in this case) and can be used for future mint/reconfig/transfers. 
 
 ### Prerequisites
 
