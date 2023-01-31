@@ -331,9 +331,9 @@ The concept of string similarity in the ARC standard is handled by thresholds us
 	 [#4] No unit name value specified in the ASA
    ```
 
-### Transfer an ASA Asset
+### Creating a wallet
 
-In order to transfer or mint ASAs we need an Algorand account to work from. We can create a named wallet account using the WALLETCONFIG action
+In order to transfer, mint or reconfigure ASAs we need an Algorand account to work from. We can create a named wallet using the WALLETCONFIG action
 
    ```
 	java -jar ./arctang.jar 
@@ -341,10 +341,34 @@ In order to transfer or mint ASAs we need an Algorand account to work from. We c
 	--walletname bob
 	--mnemonic "xxx xxx xxx .."
 	
-	Generated wallet from mnemonic with name bob with address ..
+	.. Generated wallet from mnemonic with name bob with address ..
    ```
 
-This creates a walletfile in your local .avm/wallets folder (with the walletname 'bob' in this case) which can be used for future mint/reconfig/transfers. 
+This creates a walletfile in your local .avm/wallets folder (with the walletname 'bob' in this case) which can be used for future actions which requires an on-chain action. 
+
+### Opt-in to an ASA Asset
+
+On Ethereum the most common token standards such as ERC-20 and ERC-721 can be sent to your account without restrictions. On Algorand an account must first opt-in to an asset before it can be received and there is a 0.1 ALGO account deposit requirement for every asset you hold in your Algorand account (regardless of the amount of that asset). This prevents your account from being polluted with dust tokens and acts as housekeeping for the blockchain (but also prevents random airdrops which are quite common on Ethereum). In a sense Algorand is more similar to ERC-777 as it allows more control over your tokens.
+
+In order to opt-in to an ARC NFT you can use the OPTIN action: 
+
+   ```
+	java -jar ./arctang.jar --chain TESTNET --action OPTIN --walletname bob --assetid 66753108
+	
+	.. You are about to opt-in to an ARC asset of standard ARC19
+    .. Using wallet with address P...
+    .. optin status for account P... for assetid 66753108: false
+    .. ASA optin tx request for account P... and assetid 66753108
+    .. We just opted in to ARC ASA with assetID 66753108, txhash_optin: WQG3WG...
+   ```
+
+Your account is now able to receive this ARC19 asset and 0.1 ALGO in your account is locked until you opt-out of this asset.
+
+### Transfer an ASA Asset
+
+### Mint an ASA Asset
+
+### Reconfigure an ASA Asset
 
 ### Prerequisites
 
@@ -415,7 +439,9 @@ Algorand NFT galleries:
 - <https://www.randgallery.com/algo-collection>
 
 Ethereum influenced EIPs:
+- <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md>
 - <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1155.md>
+- <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-777.md>
 - <https://docs.opensea.io/docs/metadata-standards>
 
 Misc:

@@ -143,6 +143,7 @@ public class Settings {
 				(this.getAction() == Action.TRANSFER) ||
 				(this.getAction() == Action.VERIFY) ||
 				(this.getAction() == Action.NETCONFIG) ||
+				(this.getAction() == Action.OPTIN) ||
 				false) {
 
 			// require chain
@@ -230,6 +231,13 @@ public class Settings {
 			boolean created = AVMUtils.createWalletWithName(this.getWalletname(), this.getMnemonic());
 			if (!created) LOGGER.error("Unable to create wallet with name " + this.getWalletname());
 			SystemUtils.halt();
+		}
+		
+		if ((this.getAction() == Action.OPTIN)) {
+			if (null == this.getWalletname()) {
+				LOGGER.error("Need to provide --walletname when using OPTIN action");
+				SystemUtils.halt();
+			}
 		}
 
 		if (chainInfo.getNodes().isEmpty()) {

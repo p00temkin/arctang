@@ -15,6 +15,7 @@ import com.algorand.algosdk.crypto.Address;
 import algo.arctang.enums.Action;
 import crypto.forestfish.enums.avm.AVMChain;
 import crypto.forestfish.enums.avm.AVMNFTStandard;
+import crypto.forestfish.objects.avm.AlgoLocalWallet;
 import crypto.forestfish.objects.avm.connector.AVMBlockChainConnector;
 import crypto.forestfish.objects.avm.model.nft.ARC19Asset;
 import crypto.forestfish.objects.avm.model.nft.ARC3Asset;
@@ -120,13 +121,13 @@ public class Start {
 			}
 			if (standard == AVMNFTStandard.ARC69) {
 				ARC69Asset arcasset = AVMUtils.createARC69Asset(json);
-				
+
 				LOGGER.info("Using indexer to fetch latest tx note ..");
 				String latesttxnote = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
 				System.out.println(JSONUtils.prettyPrint(latesttxnote));
 			}
 		}
-		
+
 		// verify
 		if ((settings.getAction() == Action.VERIFY) && (null != settings.getAssetid())) {
 			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
@@ -139,7 +140,7 @@ public class Start {
 				// Grab the metadata
 				String metajson = ipfs_connector.getStringContent(arc3asset.getAssetURL());
 				ARC3MetaData arc3metadata = JSONUtils.createARC3MetaData(metajson);
-				
+
 				ASAVerificationStatus vstatus = AVMUtils.verifyARC3Asset(ipfs_connector, arc3asset, arc3metadata, metajson);
 				System.out.println(vstatus.toString());
 			}
@@ -154,25 +155,62 @@ public class Start {
 					// Grab the metadata
 					String metajson = ipfs_connector.getStringContent("ipfs://" + cid);
 					ARCMetaData arcmetadata = JSONUtils.createARCMetaData(metajson);
-					
+
 					ASAVerificationStatus vstatus = AVMUtils.verifyARC19Asset(ipfs_connector, arc19asset, arcmetadata, metajson);
 					System.out.println(vstatus.toString());
 				}
 			}
 			if (standard == AVMNFTStandard.ARC69) {
 				ARC69Asset arcasset = AVMUtils.createARC69Asset(json);
-				
+
 				// Grab the metadata
 				String metajson = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
 				ARCMetaData arcmetadata = JSONUtils.createARCMetaData(metajson);
-				
+
 				IPFSConnector ipfs_connector = new IPFSConnector();
 
 				ASAVerificationStatus vstatus = AVMUtils.verifyARC69Asset(ipfs_connector, arcasset, arcmetadata, metajson);
 				System.out.println(vstatus.toString());
 			}
 		}
-		
+
+		// optin
+		if ((settings.getAction() == Action.OPTIN) && (null != settings.getAssetid()) && (null != settings.getWalletname())) {
+			
+			// First we make sure the assetid represents an ARC
+			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
+			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
+			if (false ||
+					(standard == AVMNFTStandard.ARC3) ||
+					(standard == AVMNFTStandard.ARC19) ||
+					(standard == AVMNFTStandard.ARC69) ||
+					false) {
+				LOGGER.info("You are about to opt-in to an ARC asset of standard " + standard);
+			} else {
+				LOGGER.error("The assetid does not seem to represent an ARC");
+				SystemUtils.halt();
+			}
+			
+			// Make sure the wallet exists
+			AlgoLocalWallet wallet = AVMUtils.getWalletWithName(settings.getWalletname());
+			if (null == wallet) {
+				LOGGER.error("Unable to find wallet with name " + settings.getWalletname());
+				SystemUtils.halt();
+			}
+			LOGGER.info("Using wallet with address " + wallet.getAddress());
+			
+			// Check if we already have an opt-in for this asset
+			boolean optin = AVMUtils.isAccountOptinForASA(connector, wallet.fetchAccount().getAddress(), settings.getAssetid());
+			LOGGER.info("optin status for account " + wallet.fetchAccount().getAddress() + " for assetid " + settings.getAssetid() + ": " + optin);
+
+			// Perform the opt-in to the ASA
+			if (!optin) {
+				LOGGER.info("ASA optin tx request for account " + wallet.fetchAccount().getAddress() + " and assetid " + settings.getAssetid());
+				String txhash_optin = AVMUtils.sendTXOptInToAsset(connector, wallet, settings.getAssetid(), true);
+				LOGGER.info("We just opted in to ARC ASA with assetID " + settings.getAssetid() + ", txhash_optin: " + txhash_optin);
+			}
+		}
+
 	}
 
 	private static Settings parseCliArgs(String[] args) {
@@ -204,7 +242,7 @@ public class Start {
 		// authtoken_key
 		Option nodeauthtokenkeyOption = new Option(null, "nodeauthtoken_key", true, "The Algorand custom network node authtoken keyname (defaults to X-Algo-API-Token)");
 		options.addOption(nodeauthtokenkeyOption);
-		
+
 		// idxurl
 		Option idxurlOption = new Option(null, "idxurl", true, "The Algorand custom network indexer URL");
 		options.addOption(idxurlOption);
@@ -252,11 +290,11 @@ public class Start {
 		// metadata
 		Option metadataOption = new Option(null, "metadata", false, "Grab the JSON metadata of ARC NFT with specified assetid");
 		options.addOption(metadataOption);
-		
+
 		// mnemonic
 		Option mnemonicOption = new Option(null, "mnemonic", true, "Mnemonic to use for creating an Algorand account. Use with --walletname");
 		options.addOption(mnemonicOption);
-		
+
 		// walletname
 		Option walletnameOption = new Option(null, "walletname", true, "Wallet name to use for specified action");
 		options.addOption(walletnameOption);
@@ -281,18 +319,19 @@ public class Start {
 				if (cmd.getOptionValue("action").equalsIgnoreCase("RECONFIG")) settings.setAction(Action.RECONFIG);
 				if (cmd.getOptionValue("action").equalsIgnoreCase("WALLETCONFIG")) settings.setAction(Action.WALLETCONFIG);
 				if (cmd.getOptionValue("action").equalsIgnoreCase("NETCONFIG")) settings.setAction(Action.NETCONFIG);
+				if (cmd.getOptionValue("action").equalsIgnoreCase("OPTIN")) settings.setAction(Action.OPTIN);
 			}
 
 			if (cmd.hasOption("nodeurl")) settings.setNodeurl(cmd.getOptionValue("nodeurl"));
 			if (cmd.hasOption("nodeport")) settings.setNodeport(Integer.parseInt(cmd.getOptionValue("nodeport")));
 			if (cmd.hasOption("nodeauthtoken")) settings.setNodeauthtoken(cmd.getOptionValue("nodeauthtoken"));
 			if (cmd.hasOption("nodeauthtoken_key")) settings.setNodeauthtoken_key(cmd.getOptionValue("nodeauthtoken_key"));
-			
+
 			if (cmd.hasOption("idxurl")) settings.setIdxurl(cmd.getOptionValue("idxurl"));
 			if (cmd.hasOption("idxport")) settings.setIdxport(Integer.parseInt(cmd.getOptionValue("idxport")));
 			if (cmd.hasOption("idxauthtoken")) settings.setIdxauthtoken(cmd.getOptionValue("idxauthtoken"));
 			if (cmd.hasOption("idxauthtoken_key")) settings.setIdxauthtoken_key(cmd.getOptionValue("idxauthtoken_key"));
-			
+
 			if (cmd.hasOption("assetid")) {
 				try {
 					settings.setAssetid(Long.parseLong(cmd.getOptionValue("assetid")));
@@ -311,7 +350,7 @@ public class Start {
 
 			if (cmd.hasOption("walletname")) settings.setWalletname(cmd.getOptionValue("walletname"));
 			if (cmd.hasOption("mnemonic")) settings.setMnemonic(cmd.getOptionValue("mnemonic"));
-			
+
 			settings.sanityCheck();
 			if (settings.isDebug()) settings.print();
 
