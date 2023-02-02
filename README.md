@@ -366,6 +366,17 @@ Your account is now able to receive this ARC19 asset and 0.1 ALGO in your accoun
 
 ### Transfer an ASA Asset
 
+Transferring ARC ASA assets once the target address has opted in can be done using the action command as shown below:
+
+   ```
+	java -jar ./arctang.jar --chain TESTNET --action TRANSFER --walletname bob --assetid <assetid> --to <target_account_address>
+	
+	.. OPTIN status for account <target_account_address> for assetid <assetid>: true
+	.. Wallet bob ASA ID <assetid> owned: 1
+	.. Sending ASA to <target_account_address> from wallet bob
+	.. ASA transfer completed with txhash: V3B4..
+   ```
+   
 ### Mint an ASA Asset
 
 ### Reconfigure an ASA Asset
@@ -415,6 +426,7 @@ Options:
    --metadata
    --walletname
    --mnemonic
+   --to
    ```
 
 ### Additional useful options/resources

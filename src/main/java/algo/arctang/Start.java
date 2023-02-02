@@ -1,5 +1,7 @@
 package algo.arctang;
 
+import java.math.BigInteger;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -15,6 +17,7 @@ import com.algorand.algosdk.crypto.Address;
 import algo.arctang.enums.Action;
 import crypto.forestfish.enums.avm.AVMChain;
 import crypto.forestfish.enums.avm.AVMNFTStandard;
+import crypto.forestfish.objects.avm.AVMAccountASABalance;
 import crypto.forestfish.objects.avm.AlgoLocalWallet;
 import crypto.forestfish.objects.avm.connector.AVMBlockChainConnector;
 import crypto.forestfish.objects.avm.model.nft.ARC19Asset;
@@ -210,6 +213,41 @@ public class Start {
 				LOGGER.info("We just opted in to ARC ASA with assetID " + settings.getAssetid() + ", txhash_optin: " + txhash_optin);
 			}
 		}
+		
+		// transfer
+		if ((settings.getAction() == Action.TRANSFER) && (null != settings.getAssetid()) && (null != settings.getWalletname()) && (null != settings.getTo())) {
+			
+			// Make sure the wallet exists
+			AlgoLocalWallet wallet = AVMUtils.getWalletWithName(settings.getWalletname());
+			if (null == wallet) {
+				LOGGER.error("Unable to find wallet with name " + settings.getWalletname());
+				SystemUtils.halt();
+			}
+			
+			// Make sure the target address resolves
+			Address to_addr = null;
+			try {
+				to_addr = new Address(settings.getTo());
+			} catch (Exception e) {
+				LOGGER.info("Unable to properly parse --to argument as an Algorand address");
+				SystemUtils.halt();
+			}
+			
+			// Check if the target account has an opt-in for this asset
+			boolean optin = AVMUtils.isAccountOptinForASA(connector, to_addr, settings.getAssetid());
+			LOGGER.info("OPTIN status for account " + settings.getTo() + " for assetid " + settings.getAssetid() + ": " + optin);
+			
+			// Make sure we have 1 of the asset
+			BigInteger asa_balance = AVMUtils.getAccountBalanceForASA(connector, wallet.fetchAccount().getAddress(), settings.getAssetid());
+			LOGGER.info("Wallet " + settings.getWalletname() + " ASAs ID " + settings.getAssetid() + " owns " + asa_balance + " of ASA with ID " + settings.getAssetid());
+
+			if (asa_balance.compareTo(BigInteger.ONE) >= 1) {
+				LOGGER.info("Sending ASA to " + settings.getTo() + " from wallet " + settings.getWalletname());
+				String txhash = AVMUtils.sendTXTransferASA(connector, wallet, to_addr, settings.getAssetid(), BigInteger.ONE, true);
+				LOGGER.info("ASA transfer completed with txhash: " + txhash);
+			}
+			
+		}
 
 	}
 
@@ -298,6 +336,10 @@ public class Start {
 		// walletname
 		Option walletnameOption = new Option(null, "walletname", true, "Wallet name to use for specified action");
 		options.addOption(walletnameOption);
+		
+		// to
+		Option toOption = new Option(null, "to", true, "Target account address for asset TRANSFER action");
+		options.addOption(toOption);
 
 		HelpFormatter formatter = new HelpFormatter();
 		CommandLineParser parser = new DefaultParser();
@@ -350,6 +392,7 @@ public class Start {
 
 			if (cmd.hasOption("walletname")) settings.setWalletname(cmd.getOptionValue("walletname"));
 			if (cmd.hasOption("mnemonic")) settings.setMnemonic(cmd.getOptionValue("mnemonic"));
+			if (cmd.hasOption("to")) settings.setTo(cmd.getOptionValue("to"));
 
 			settings.sanityCheck();
 			if (settings.isDebug()) settings.print();

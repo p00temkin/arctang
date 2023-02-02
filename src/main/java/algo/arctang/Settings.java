@@ -47,6 +47,7 @@ public class Settings {
 	
 	private String walletname;
 	private String mnemonic;
+	private String to;
 	
 	private boolean debug = false;
 	
@@ -228,14 +229,29 @@ public class Settings {
 				SystemUtils.halt();
 			}
 			
-			boolean created = AVMUtils.createWalletWithName(this.getWalletname(), this.getMnemonic());
-			if (!created) LOGGER.error("Unable to create wallet with name " + this.getWalletname());
+			boolean createdOrExists = AVMUtils.createWalletWithName(this.getWalletname(), this.getMnemonic());
+			if (!createdOrExists) LOGGER.error("Unable to create wallet with name " + this.getWalletname());
 			SystemUtils.halt();
 		}
 		
 		if ((this.getAction() == Action.OPTIN)) {
 			if (null == this.getWalletname()) {
-				LOGGER.error("Need to provide --walletname when using OPTIN action");
+				LOGGER.error("Need to provide --walletname when using the OPTIN action");
+				SystemUtils.halt();
+			}
+		}
+		
+		if ((this.getAction() == Action.TRANSFER)) {
+			if (null == this.getWalletname()) {
+				LOGGER.error("Need to provide --walletname when using the TRANSFER action");
+				SystemUtils.halt();
+			}
+			if (null == this.getTo()) {
+				LOGGER.error("Need to provide --to for the target account when using the TRANSFER action");
+				SystemUtils.halt();
+			}
+			if (!AVMUtils.isValidAlgorandAccount(this.getTo())) {
+				LOGGER.error("The --to argument needs to be a valid Algorand account, you provided " + this.getTo());
 				SystemUtils.halt();
 			}
 		}
@@ -337,6 +353,14 @@ public class Settings {
 
 	public void setMnemonic(String mnemonic) {
 		this.mnemonic = mnemonic;
+	}
+
+	public String getTo() {
+		return to;
+	}
+
+	public void setTo(String to) {
+		this.to = to;
 	}
 
 }
