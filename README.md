@@ -1,6 +1,6 @@
 ## ARCTANG
 
-Swiss army knife to query/validate/transfer/mint/update NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) Algorand support (part of this project). 
+Swiss army knife to query/validate/transfer/mint/update NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) (part of this project) for Algorand support. 
 
 ![alt text](https://github.com/p00temkin/arctang/blob/master/img/arctang_r7.png?raw=true)
 
@@ -23,14 +23,13 @@ the ASA needs to comply with one of the current Algorand NFT-related ARCs. An AR
 - **ARC19**
   - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0019.md>
   - NFT metadata focused standard. 
-  - Enforces off-chain IPFS metadata by using the url field as a template populated by the reserve address field which holds the CID. Easy to update since the reserve address value can be replaced with a single transaction, which in turn changes the metadata. The reserve address is only irrelevant (and thus can be used in this way) for pure NFTs (1 of 1).
+  - Enforces off-chain IPFS metadata by using the url field as a template populated by the reserve address field which holds the IPFS CID. Easy to update since the reserve address value can be replaced with a single transaction, which in turn changes the metadata. The reserve address is only irrelevant (and thus can be used in this way) for pure NFTs (1 of 1).
   - Suitable for mutable NFTs intended to transition into immutable NFTs, with complete metadata (+mediafile) changes. 
 
 - **ARC69**
   - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0069.md>
   - NFT mediafile focused standard. 
-  - The url field points to the NFT digital asset file. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction 
-and simple access to the mediafile url.
+  - The url field points to the NFT digital asset file. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction and simple access to the mediafile url.
   - Suitable for mutable NFTs where the mediafile is locked, easily accessed, but the compact metadata associated with it changes over time.
  
 In common for all of these standards is that the four addresses of an ASA (manager, reservice, freeze and clawback) can be updated by the manager address unless it is set to "". 
