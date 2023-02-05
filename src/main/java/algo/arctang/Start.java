@@ -25,7 +25,7 @@ import crypto.forestfish.objects.avm.model.nft.ARC3Asset;
 import crypto.forestfish.objects.avm.model.nft.ARC69Asset;
 import crypto.forestfish.objects.avm.model.nft.ASAVerificationStatus;
 import crypto.forestfish.objects.avm.model.nft.metadata.ARC3MetaData;
-import crypto.forestfish.objects.avm.model.nft.metadata.ARCMetaData;
+import crypto.forestfish.objects.avm.model.nft.metadata.ARC69MetaData;
 import crypto.forestfish.objects.ipfs.connector.IPFSConnector;
 import crypto.forestfish.utils.AVMUtils;
 import crypto.forestfish.utils.CryptUtils;
@@ -162,7 +162,7 @@ public class Start {
 
 					// Grab the metadata
 					String metajson = ipfs_connector.getStringContent("ipfs://" + cid);
-					ARCMetaData arcmetadata = JSONUtils.createARCMetaData(metajson);
+					ARC69MetaData arcmetadata = JSONUtils.createARCMetaData(metajson);
 
 					ASAVerificationStatus vstatus = AVMUtils.verifyARC19Asset(ipfs_connector, arc19asset, arcmetadata, metajson);
 					System.out.println(vstatus.toString());
@@ -173,7 +173,7 @@ public class Start {
 
 				// Grab the metadata
 				String metajson = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
-				ARCMetaData arcmetadata = JSONUtils.createARCMetaData(metajson);
+				ARC69MetaData arcmetadata = JSONUtils.createARCMetaData(metajson);
 
 				IPFSConnector ipfs_connector = new IPFSConnector();
 
@@ -254,10 +254,17 @@ public class Start {
 
 		}
 
-		// convert
+		// arc3 convert
 		if ((settings.getAction() == Action.CONVERT) && (null != settings.getFrom_erc_folder()) && (null != settings.getTo_arc3_folder())) {
 			IPFSConnector ipfs_connector = new IPFSConnector();
 			boolean convert_success = NFTUtils.convertERC721MetadataFolderToARC(ipfs_connector, settings.getFrom_erc_folder(), settings.getTo_arc3_folder(), AVMNFTStandard.ARC3, false);
+			LOGGER.info("convert status: " + convert_success);
+		}
+		
+		// arc69 convert
+		if ((settings.getAction() == Action.CONVERT) && (null != settings.getFrom_erc_folder()) && (null != settings.getTo_arc69_folder())) {
+			IPFSConnector ipfs_connector = new IPFSConnector();
+			boolean convert_success = NFTUtils.convertERC721MetadataFolderToARC(ipfs_connector, settings.getFrom_erc_folder(), settings.getTo_arc69_folder(), AVMNFTStandard.ARC69, false);
 			LOGGER.info("convert status: " + convert_success);
 		}
 

@@ -379,7 +379,8 @@ Transferring ARC ASA assets once the target address has opted in can be done usi
 ### Convert ERC-721/1155 Metadata to ARC
 
 The NFT Metadata used in the ARC standards are heavily inspired by the Ethereum counterparts, and the arctang tool supports converting/upgrading to the ARC standards using the CONVERT action. The changes includes adding 'integrity' checksums (for ARC3) and moving from 'attributes' to 'properties' as defined in the ARC standards. 
-To convert a collection on Ethereum to Algorand, download all metadata JSON files into a folder and specify the target folder using one of the ARC type specific target folder options. An example is shown below for the Ethereum Bored Ape collection where the metadata files are placed in a local folder "boredapes_erc721". Although the Bored Ape metadata is very limited, the appropriate ARC3 image integrity field is added to the Algorand version (along with attributes -> properties conversion) as shown below: 
+
+To convert a collection on Ethereum to Algorand, download all metadata JSON files into a folder and specify the target folder using one of the ARC type specific target folder options. An example is shown below for the Ethereum [Bored Ape Yacht Club](https://boredapeyachtclub.com/) collection where the metadata files are placed in a local folder "boredapes_erc721". Although the Bored Ape metadata is very limited, the appropriate ARC3 image integrity field is added to the Algorand version (along with attributes -> properties conversion) as shown below: 
 
    ```
 	java -jar ./arctang.jar --action CONVERT --from_erc_folder ./boredapes_erc721 --to_arc3_folder ./boredapes_arc3
@@ -436,6 +437,67 @@ To convert a collection on Ethereum to Algorand, download all metadata JSON file
 	----------------------------------------------------------------
     .. convert status: true
 	
+   ```
+
+If we try with a more rich ERC-721 such as [Luchadores](https://luchadores.io) we can see how onchain image data is kept as well, here with ARC69 metadata output:
+
+   ```
+   java -jar ./arctang.jar --action CONVERT --from_erc_folder ./luchadores_erc721 --to_arc69_folder ./luchadores_arc69
+   	
+   .. Updating list of active IPFS gateway URLs ..
+   .. Nr of active IPFS gateways: 14
+	------------------------ ERC721 metadata ------------------------
+	{
+	  "name": "Luchador #4044",
+	  "description": "Luchadores are randomly generated using Chainlink VRF and have 100% on-chain art and metadata - Only 10000 will ever exist!",
+	  "image_data": "<svg id='luchador4044' ...</svg>",
+	  "external_url": "https://luchadores.io/luchador/4044",
+	  "attributes": [
+		{
+		  "trait_type": "Mask",
+		  "value": "Dash"
+		},
+		{
+		  "trait_type": "Boots",
+		  "value": "High"
+		},
+		{
+		  "trait_type": "Attributes",
+		  "value": 2
+		}
+	  ]
+	}
+	-----------------------------------------------------------------
+	--------------- ERC721 -> ARC69, metadata results ---------------
+	{
+	  "attributes": [
+		{
+		  "trait_type": "Mask",
+		  "value": "Dash"
+		},
+		{
+		  "trait_type": "Boots",
+		  "value": "High"
+		},
+		{
+		  "trait_type": "Attributes",
+		  "value": 2
+		}
+	  ],
+	  "description": "Luchadores are randomly generated using Chainlink VRF and have 100% on-chain art and metadata - Only 10000 will ever exist!",
+	  "external_url": "https://luchadores.io/luchador/4044",
+	  "image_data": "<svg id='luchador4044' ...</svg>",
+	  "name": "Luchador #4044",
+	  "properties": {
+		"Boots": "High",
+		"Mask": "Dash",
+		"Attributes": 2
+	  },
+	  "standard": "arc69"
+	}
+	----------------------------------------------------------------
+   .. convert status: true
+
    ```
    
 ### Mint an ASA Asset
