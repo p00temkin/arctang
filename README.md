@@ -500,6 +500,8 @@ If we try with a more rich ERC-721 such as [Luchadores](https://luchadores.io) w
 
    ```
    
+Note that ARC19 does not have any specific requirements for the JSON metadata so there is no separate --to_arc19_folder option. 
+   
 ### Mint an ASA Asset
 
 ### Reconfigure an ASA Asset

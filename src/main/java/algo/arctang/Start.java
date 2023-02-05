@@ -368,10 +368,6 @@ public class Start {
 		Option to_arc3_folderOption = new Option(null, "to_arc3_folder", true, "Folder path to target ARC3 JSON metadata files");
 		options.addOption(to_arc3_folderOption);
 
-		// to_arc19_folderOption
-		Option to_arc19_folderOption = new Option(null, "to_arc19_folder", true, "Folder path to target ARC19 JSON metadata files");
-		options.addOption(to_arc19_folderOption);
-
 		// to_arc69_folderOption
 		Option to_arc69_folderOption = new Option(null, "to_arc69_folder", true, "Folder path to target ARC69 JSON metadata files");
 		options.addOption(to_arc69_folderOption);
@@ -432,7 +428,6 @@ public class Start {
 
 			if (cmd.hasOption("from_erc_folder")) settings.setFrom_erc_folder(cmd.getOptionValue("from_erc_folder"));
 			if (cmd.hasOption("to_arc3_folder")) settings.setTo_arc3_folder(cmd.getOptionValue("to_arc3_folder"));
-			if (cmd.hasOption("to_arc19_folder")) settings.setTo_arc19_folder(cmd.getOptionValue("to_arc19_folder"));
 			if (cmd.hasOption("to_arc69_folder")) settings.setTo_arc69_folder(cmd.getOptionValue("to_arc69_folder"));
 
 			settings.sanityCheck();

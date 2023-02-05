@@ -53,7 +53,6 @@ public class Settings {
 	
 	private String from_erc_folder;
 	private String to_arc3_folder;
-	private String to_arc19_folder;
 	private String to_arc69_folder;
 	
 	private boolean debug = false;
@@ -390,14 +389,6 @@ public class Settings {
 
 	public void setTo_arc3_folder(String to_arc3_folder) {
 		this.to_arc3_folder = to_arc3_folder;
-	}
-
-	public String getTo_arc19_folder() {
-		return to_arc19_folder;
-	}
-
-	public void setTo_arc19_folder(String to_arc19_folder) {
-		this.to_arc19_folder = to_arc19_folder;
 	}
 
 	public String getTo_arc69_folder() {
