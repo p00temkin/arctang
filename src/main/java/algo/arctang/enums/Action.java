@@ -5,6 +5,7 @@ public enum Action {
 	VERIFY,
 	OPTIN,
 	TRANSFER,
+	CONVERT,
 	MINT,
 	RECONFIG,
 	WALLETCONFIG,

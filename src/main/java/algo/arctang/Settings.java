@@ -1,5 +1,7 @@
 package algo.arctang;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 import java.util.ArrayList;
 
@@ -48,6 +50,11 @@ public class Settings {
 	private String walletname;
 	private String mnemonic;
 	private String to;
+	
+	private String from_erc_folder;
+	private String to_arc3_folder;
+	private String to_arc19_folder;
+	private String to_arc69_folder;
 	
 	private boolean debug = false;
 	
@@ -137,6 +144,11 @@ public class Settings {
 
 	public void sanityCheck() {
 		
+		if (null == this.getAction()) {
+			LOGGER.error("You need to define an action using --action");
+			SystemUtils.halt();
+		}
+		
 		if (false ||
 				(this.getAction() == Action.QUERY) ||
 				(this.getAction() == Action.MINT) ||
@@ -150,6 +162,12 @@ public class Settings {
 			// require chain
 			if (null == this.getChain()) {
 				LOGGER.error("You need to specify a chain, MAINNET, BETANET or TESTNET");
+				SystemUtils.halt();
+			}
+			
+			// Require defined Algorand node
+			if (chainInfo.getNodes().isEmpty()) {
+				LOGGER.error("You need to define a node for " + this.getChain() + " using --confignetwork since no public nodes are available");
 				SystemUtils.halt();
 			}
 			
@@ -256,11 +274,6 @@ public class Settings {
 			}
 		}
 
-		if (chainInfo.getNodes().isEmpty()) {
-			LOGGER.error("You need to define a node for " + this.getChain() + " using --confignetwork since no public nodes are available");
-			SystemUtils.halt();
-		}
-
 		return;
 	}
 
@@ -361,6 +374,38 @@ public class Settings {
 
 	public void setTo(String to) {
 		this.to = to;
+	}
+
+	public String getFrom_erc_folder() {
+		return from_erc_folder;
+	}
+
+	public void setFrom_erc_folder(String from_erc_folder) {
+		this.from_erc_folder = from_erc_folder;
+	}
+
+	public String getTo_arc3_folder() {
+		return to_arc3_folder;
+	}
+
+	public void setTo_arc3_folder(String to_arc3_folder) {
+		this.to_arc3_folder = to_arc3_folder;
+	}
+
+	public String getTo_arc19_folder() {
+		return to_arc19_folder;
+	}
+
+	public void setTo_arc19_folder(String to_arc19_folder) {
+		this.to_arc19_folder = to_arc19_folder;
+	}
+
+	public String getTo_arc69_folder() {
+		return to_arc69_folder;
+	}
+
+	public void setTo_arc69_folder(String to_arc69_folder) {
+		this.to_arc69_folder = to_arc69_folder;
 	}
 
 }

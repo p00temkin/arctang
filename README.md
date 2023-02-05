@@ -378,10 +378,63 @@ Transferring ARC ASA assets once the target address has opted in can be done usi
    
 ### Convert ERC-721/1155 Metadata to ARC
 
-The NFT Metadata used in the ARC standards are heavily inspired by the Ethereum counterparts, and the arctang tool supports converting/upgrading to the ARC standards using the CONVERT action. The changes includes adding 'integrity' checksums (for ARC3)  or moving from 'attributes' to 'properties' as defined in the ARC standards. To convert a collection on Ethereum to Algorand, download all metadata JSON files into a folder and specify the target folder using one of the ARC type specific target folder options.  
+The NFT Metadata used in the ARC standards are heavily inspired by the Ethereum counterparts, and the arctang tool supports converting/upgrading to the ARC standards using the CONVERT action. The changes includes adding 'integrity' checksums (for ARC3) and moving from 'attributes' to 'properties' as defined in the ARC standards. 
+To convert a collection on Ethereum to Algorand, download all metadata JSON files into a folder and specify the target folder using one of the ARC type specific target folder options. An example is shown below for the Ethereum Bored Ape collection where the metadata files are placed in a local folder "boredapes_erc721". Although the Bored Ape metadata is very limited, the appropriate ARC3 image integrity field is added to the Algorand version (along with attributes -> properties conversion) as shown below: 
 
    ```
-	java -jar ./arctang.jar --action CONVERT --from_erc_folder <folder path> --to_arc3_folder <folder path>
+	java -jar ./arctang.jar --action CONVERT --from_erc_folder ./boredapes_erc721 --to_arc3_folder ./boredapes_arc3
+	
+	.. Updating list of active IPFS gateway URLs ..
+    .. Nr of active IPFS gateways: 13
+	------------------------ ERC721 metadata ------------------------
+	{
+	  "image": "ipfs://QmRRPWG96cmgTn2qSzjwr2qvfNEuhunv6FNeMFGa9bx6mQ",
+	  "attributes": [
+		{
+		  "trait_type": "Earring",
+		  "value": "Silver Hoop"
+		},
+		{
+		  "trait_type": "Background",
+		  "value": "Orange"
+		},
+		{
+		  "trait_type": "Fur",
+		  "value": "Robot"
+		},
+		{
+		  "trait_type": "Clothes",
+		  "value": "Striped Tee"
+		},
+		{
+		  "trait_type": "Mouth",
+		  "value": "Discomfort"
+		},
+		{
+		  "trait_type": "Eyes",
+		  "value": "X Eyes"
+		}
+	  ]
+	}
+	-----------------------------------------------------------------
+
+    .. Attempting to fetch ipfs://QmRRPWG96cmgTn2qSzjwr2qvfNEuhunv6FNeMFGa9bx6mQ using https://c4rex.co/ipfs/
+	
+	--------------- ERC721 -> ARC3, metadata results ---------------
+	{
+	  "image": "ipfs://QmRRPWG96cmgTn2qSzjwr2qvfNEuhunv6FNeMFGa9bx6mQ",
+	  "image_data_integrity": "sha256-5Fofb0zgg/BxhAkGa53OHHADxyxRToVSzzNRWsEDvOo=",
+	  "properties": {
+		"Fur": "Robot",
+		"Eyes": "X Eyes",
+		"Background": "Orange",
+		"Mouth": "Discomfort",
+		"Clothes": "Striped Tee",
+		"Earring": "Silver Hoop"
+	  }
+	}
+	----------------------------------------------------------------
+    .. convert status: true
 	
    ```
    

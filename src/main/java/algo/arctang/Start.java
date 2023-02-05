@@ -30,6 +30,7 @@ import crypto.forestfish.objects.ipfs.connector.IPFSConnector;
 import crypto.forestfish.utils.AVMUtils;
 import crypto.forestfish.utils.CryptUtils;
 import crypto.forestfish.utils.JSONUtils;
+import crypto.forestfish.utils.NFTUtils;
 import crypto.forestfish.utils.StringsUtils;
 import crypto.forestfish.utils.SystemUtils;
 import io.ipfs.multihash.Multihash;
@@ -53,11 +54,15 @@ public class Start {
 		/**
 		 *  Connect to Algorand blockchain
 		 */
-		AVMBlockChainConnector connector = new AVMBlockChainConnector(settings.getChainInfo());
-		Long lastRound = AVMUtils.getLastRound(connector);
-		LOGGER.debug("lastRound: " + lastRound);
-		Long lastRoundIndexer = AVMUtils.getIndexerHealthCheck(connector);
-		LOGGER.debug("lastRoundIndexer: " + lastRoundIndexer);
+		AVMBlockChainConnector connector = null;
+		if (settings.getAction() != Action.CONVERT) {
+			System.out.println("action is: " + settings.getAction());
+			connector = new AVMBlockChainConnector(settings.getChainInfo());
+			Long lastRound = AVMUtils.getLastRound(connector);
+			LOGGER.debug("lastRound: " + lastRound);
+			Long lastRoundIndexer = AVMUtils.getIndexerHealthCheck(connector);
+			LOGGER.debug("lastRoundIndexer: " + lastRoundIndexer);
+		}
 
 		/**
 		 * QUERY action
@@ -179,7 +184,7 @@ public class Start {
 
 		// optin
 		if ((settings.getAction() == Action.OPTIN) && (null != settings.getAssetid()) && (null != settings.getWalletname())) {
-			
+
 			// First we make sure the assetid represents an ARC
 			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
@@ -193,7 +198,7 @@ public class Start {
 				LOGGER.error("The assetid does not seem to represent an ARC");
 				SystemUtils.halt();
 			}
-			
+
 			// Make sure the wallet exists
 			AlgoLocalWallet wallet = AVMUtils.getWalletWithName(settings.getWalletname());
 			if (null == wallet) {
@@ -201,7 +206,7 @@ public class Start {
 				SystemUtils.halt();
 			}
 			LOGGER.info("Using wallet with address " + wallet.getAddress());
-			
+
 			// Check if we already have an opt-in for this asset
 			boolean optin = AVMUtils.isAccountOptinForASA(connector, wallet.fetchAccount().getAddress(), settings.getAssetid());
 			LOGGER.info("optin status for account " + wallet.fetchAccount().getAddress() + " for assetid " + settings.getAssetid() + ": " + optin);
@@ -213,17 +218,17 @@ public class Start {
 				LOGGER.info("We just opted in to ARC ASA with assetID " + settings.getAssetid() + ", txhash_optin: " + txhash_optin);
 			}
 		}
-		
+
 		// transfer
 		if ((settings.getAction() == Action.TRANSFER) && (null != settings.getAssetid()) && (null != settings.getWalletname()) && (null != settings.getTo())) {
-			
+
 			// Make sure the wallet exists
 			AlgoLocalWallet wallet = AVMUtils.getWalletWithName(settings.getWalletname());
 			if (null == wallet) {
 				LOGGER.error("Unable to find wallet with name " + settings.getWalletname());
 				SystemUtils.halt();
 			}
-			
+
 			// Make sure the target address resolves
 			Address to_addr = null;
 			try {
@@ -232,11 +237,11 @@ public class Start {
 				LOGGER.info("Unable to properly parse --to argument as an Algorand address");
 				SystemUtils.halt();
 			}
-			
+
 			// Check if the target account has an opt-in for this asset
 			boolean optin = AVMUtils.isAccountOptinForASA(connector, to_addr, settings.getAssetid());
 			LOGGER.info("OPTIN status for account " + settings.getTo() + " for assetid " + settings.getAssetid() + ": " + optin);
-			
+
 			// Make sure we have 1 of the asset
 			BigInteger asa_balance = AVMUtils.getAccountBalanceForASA(connector, wallet.fetchAccount().getAddress(), settings.getAssetid());
 			LOGGER.info("Wallet " + settings.getWalletname() + " ASAs ID " + settings.getAssetid() + " owns " + asa_balance + " of ASA with ID " + settings.getAssetid());
@@ -246,7 +251,14 @@ public class Start {
 				String txhash = AVMUtils.sendTXTransferASA(connector, wallet, to_addr, settings.getAssetid(), BigInteger.ONE, true);
 				LOGGER.info("ASA transfer completed with txhash: " + txhash);
 			}
-			
+
+		}
+
+		// convert
+		if ((settings.getAction() == Action.CONVERT) && (null != settings.getFrom_erc_folder()) && (null != settings.getTo_arc3_folder())) {
+			IPFSConnector ipfs_connector = new IPFSConnector();
+			boolean convert_success = NFTUtils.convertERC721MetadataFolderToARC(ipfs_connector, settings.getFrom_erc_folder(), settings.getTo_arc3_folder(), AVMNFTStandard.ARC3, false);
+			LOGGER.info("convert status: " + convert_success);
 		}
 
 	}
@@ -336,10 +348,26 @@ public class Start {
 		// walletname
 		Option walletnameOption = new Option(null, "walletname", true, "Wallet name to use for specified action");
 		options.addOption(walletnameOption);
-		
+
 		// to
 		Option toOption = new Option(null, "to", true, "Target account address for asset TRANSFER action");
 		options.addOption(toOption);
+
+		// from_erc_folder
+		Option from_erc_folderOption = new Option(null, "from_erc_folder", true, "Folder path to source ERC721 JSON metadata files to be converted to ARC");
+		options.addOption(from_erc_folderOption);
+
+		// to_arc3_folderOption
+		Option to_arc3_folderOption = new Option(null, "to_arc3_folder", true, "Folder path to target ARC3 JSON metadata files");
+		options.addOption(to_arc3_folderOption);
+
+		// to_arc19_folderOption
+		Option to_arc19_folderOption = new Option(null, "to_arc19_folder", true, "Folder path to target ARC19 JSON metadata files");
+		options.addOption(to_arc19_folderOption);
+
+		// to_arc69_folderOption
+		Option to_arc69_folderOption = new Option(null, "to_arc69_folder", true, "Folder path to target ARC69 JSON metadata files");
+		options.addOption(to_arc69_folderOption);
 
 		HelpFormatter formatter = new HelpFormatter();
 		CommandLineParser parser = new DefaultParser();
@@ -362,6 +390,7 @@ public class Start {
 				if (cmd.getOptionValue("action").equalsIgnoreCase("WALLETCONFIG")) settings.setAction(Action.WALLETCONFIG);
 				if (cmd.getOptionValue("action").equalsIgnoreCase("NETCONFIG")) settings.setAction(Action.NETCONFIG);
 				if (cmd.getOptionValue("action").equalsIgnoreCase("OPTIN")) settings.setAction(Action.OPTIN);
+				if (cmd.getOptionValue("action").equalsIgnoreCase("CONVERT")) settings.setAction(Action.CONVERT);
 			}
 
 			if (cmd.hasOption("nodeurl")) settings.setNodeurl(cmd.getOptionValue("nodeurl"));
@@ -393,6 +422,11 @@ public class Start {
 			if (cmd.hasOption("walletname")) settings.setWalletname(cmd.getOptionValue("walletname"));
 			if (cmd.hasOption("mnemonic")) settings.setMnemonic(cmd.getOptionValue("mnemonic"));
 			if (cmd.hasOption("to")) settings.setTo(cmd.getOptionValue("to"));
+
+			if (cmd.hasOption("from_erc_folder")) settings.setFrom_erc_folder(cmd.getOptionValue("from_erc_folder"));
+			if (cmd.hasOption("to_arc3_folder")) settings.setTo_arc3_folder(cmd.getOptionValue("to_arc3_folder"));
+			if (cmd.hasOption("to_arc19_folder")) settings.setTo_arc19_folder(cmd.getOptionValue("to_arc19_folder"));
+			if (cmd.hasOption("to_arc69_folder")) settings.setTo_arc69_folder(cmd.getOptionValue("to_arc69_folder"));
 
 			settings.sanityCheck();
 			if (settings.isDebug()) settings.print();
