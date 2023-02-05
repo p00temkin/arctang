@@ -1,6 +1,6 @@
 ## ARCTANG
 
-Swiss army knife to query/validate/transfer/mint/update NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) (part of this project) for Algorand support. 
+Swiss army knife to query/validate/transfer/convert/mint/update NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) (part of this project) for Algorand support. 
 
 ![alt text](https://github.com/p00temkin/arctang/blob/master/img/arctang_r7.png?raw=true)
 
@@ -376,6 +376,15 @@ Transferring ARC ASA assets once the target address has opted in can be done usi
 	.. ASA transfer completed with txhash: V3B4..
    ```
    
+### Convert ERC-721/1155 Metadata to ARC
+
+The NFT Metadata used in the ARC standards are heavily inspired by the Ethereum counterparts, and the arctang tool supports converting/upgrading to the ARC standards using the CONVERT action. The changes includes adding 'integrity' checksums (for ARC3)  or moving from 'attributes' to 'properties' as defined in the ARC standards. To convert a collection on Ethereum to Algorand, download all metadata JSON files into a folder and specify the target folder using one of the ARC type specific target folder options.  
+
+   ```
+	java -jar ./arctang.jar --action CONVERT --from_erc_folder <folder path> --to_arc3_folder <folder path>
+	
+   ```
+   
 ### Mint an ASA Asset
 
 ### Reconfigure an ASA Asset
@@ -426,6 +435,10 @@ Options:
    --walletname
    --mnemonic
    --to
+   --from_erc_folder
+   --to_arc3_folder
+   --to_arc19_folder
+   --to_arc69_folder
    ```
 
 ### Additional useful options/resources
