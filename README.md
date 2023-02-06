@@ -547,14 +547,14 @@ In common for most NFTs on Algorand is the use of assetName and unitName, where 
 Options:
 
    ```
-   --chain					The Algorand chain: MAINNET, BETANET or TESTNET
-   --action					Action to perform: QUERY, VERIFY, TRANSFER, MINT, WALLETCONFIG, NETCONFIG, OPTIN, CONVERT
-   --nodeurl				The Algorand custom network node URL
-   --nodeport				The Algorand custom network node port
+   --chain				The Algorand chain: MAINNET, BETANET or TESTNET
+   --action			Action to perform: QUERY, VERIFY, TRANSFER, MINT, WALLETCONFIG, NETCONFIG, OPTIN, CONVERT
+   --nodeurl			The Algorand custom network node URL
+   --nodeport			The Algorand custom network node port
    --nodeauthtoken			The Algorand custom network node authtoken
    --nodeauthtoken_key		The Algorand custom network node authtoken keyname (defaults to X-Algo-API-Token)
-   --idxurl					The Algorand custom network indexer URL
-   --idxport				The Algorand custom network indexer port
+   --idxurl			The Algorand custom network indexer URL
+   --idxport			The Algorand custom network indexer port
    --idxauthtoken			The Algorand custom network indexer authtoken
    --idxauthtoken_key		The Algorand custom network indexer authtoken keyname (defaults to X-Algo-API-Token)
    --assetid				The ASA assetID
