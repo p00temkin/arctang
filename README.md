@@ -557,22 +557,22 @@ Options:
    --idxport			The Algorand custom network indexer port
    --idxauthtoken			The Algorand custom network indexer authtoken
    --idxauthtoken_key		The Algorand custom network indexer authtoken keyname (defaults to X-Algo-API-Token)
-   --assetid				The ASA assetID
-   --parsed					Parsed output format
-   --raw					Raw output format
+   --assetid			The ASA assetID
+   --parsed			Parsed output format
+   --raw				Raw output format
    --probe_arcstandard		Estimates ARC standard of assetid
-   --debug					Debug mode
-   --metadata				Grab the JSON metadata of ARC NFT with specified assetid
-   --walletname				Wallet name to use for specified action
-   --mnemonic				Mnemonic to use for creating an Algorand account. Use with --walletname
-   --to						Target account address for asset TRANSFER action
+   --debug				Debug mode
+   --metadata			Grab the JSON metadata of ARC NFT with specified assetid
+   --walletname			Wallet name to use for specified action
+   --mnemonic			Mnemonic to use for creating an Algorand account. Use with --walletname
+   --to				Target account address for asset TRANSFER action
    --from_erc_folder		Folder path to source ERC721 JSON metadata files to be converted to ARC
-   --to_arc3_folder			Folder path to target ARC3 JSON metadata files
+   --to_arc3_folder		Folder path to target ARC3 JSON metadata files
    --to_arc69_folder		Folder path to target ARC69 JSON metadata files
    --metadata_cid			IPFS CID of the metadata JSON file to be minted
    --arcstandard			ARC standard to use for minting: ARC3, ARC19 or ARC69
-   --asset_name				Name of asset to be minted (can be excluded if metadata has name properties)
-   --unit_name				Unit name of asset to be minted (can be exluded if metadata has name properties)
+   --asset_name			Name of asset to be minted (can be excluded if metadata has name properties)
+   --unit_name			Unit name of asset to be minted (can be exluded if metadata has name properties)
    ```
 
 ### Additional useful options/resources
