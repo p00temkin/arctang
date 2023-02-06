@@ -29,6 +29,7 @@ import crypto.forestfish.objects.avm.model.nft.metadata.ARC69MetaData;
 import crypto.forestfish.objects.ipfs.connector.IPFSConnector;
 import crypto.forestfish.utils.AVMUtils;
 import crypto.forestfish.utils.CryptUtils;
+import crypto.forestfish.utils.FilesUtils;
 import crypto.forestfish.utils.JSONUtils;
 import crypto.forestfish.utils.NFTUtils;
 import crypto.forestfish.utils.StringsUtils;
@@ -56,7 +57,6 @@ public class Start {
 		 */
 		AVMBlockChainConnector connector = null;
 		if (settings.getAction() != Action.CONVERT) {
-			System.out.println("action is: " + settings.getAction());
 			connector = new AVMBlockChainConnector(settings.getChainInfo());
 			Long lastRound = AVMUtils.getLastRound(connector);
 			LOGGER.debug("lastRound: " + lastRound);
@@ -78,7 +78,7 @@ public class Start {
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isParsed()) {
 			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 
-			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(json);
 			if (standard == AVMNFTStandard.ARC3) {
 				ARC3Asset arcasset = AVMUtils.getARC3Info(connector, settings.getAssetid());
 				System.out.println(arcasset.toString());
@@ -94,7 +94,7 @@ public class Start {
 		}
 
 		// arctype output
-		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isArctype()) {
+		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isProbe_arcstandard()) {
 			AVMNFTStandard standard = AVMUtils.identifyARCStandard(connector, settings.getAssetid());
 			System.out.println("ASA identified as: " + standard);
 		}
@@ -103,7 +103,7 @@ public class Start {
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isMetadata()) {
 			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 
-			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(json);
 			if (standard == AVMNFTStandard.ARC3) {
 				ARC3Asset arcasset = AVMUtils.createARC3Asset(json);
 
@@ -138,14 +138,16 @@ public class Start {
 
 		// verify
 		if ((settings.getAction() == Action.VERIFY) && (null != settings.getAssetid())) {
-			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
+			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 
-			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json);
+			LOGGER.info("Standard determined to be: " + standard);
 			if (standard == AVMNFTStandard.ARC3) {
-				ARC3Asset arc3asset = AVMUtils.createARC3Asset(json);
+				ARC3Asset arc3asset = AVMUtils.createARC3Asset(asa_json);
 				IPFSConnector ipfs_connector = new IPFSConnector();
 
 				// Grab the metadata
+				LOGGER.info("Getting metadata from assetURL " + arc3asset.getAssetURL());
 				String metajson = ipfs_connector.getStringContent(arc3asset.getAssetURL());
 				ARC3MetaData arc3metadata = JSONUtils.createARC3MetaData(metajson);
 
@@ -153,7 +155,7 @@ public class Start {
 				System.out.println(vstatus.toString());
 			}
 			if (standard == AVMNFTStandard.ARC19) {
-				ARC19Asset arc19asset = AVMUtils.createARC19Asset(json);
+				ARC19Asset arc19asset = AVMUtils.createARC19Asset(asa_json);
 				String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arc19asset.getAssetURL(), arc19asset.getReserve().toString());
 
 				if (!"".equals(cid)) {
@@ -169,7 +171,7 @@ public class Start {
 				}
 			}
 			if (standard == AVMNFTStandard.ARC69) {
-				ARC69Asset arcasset = AVMUtils.createARC69Asset(json);
+				ARC69Asset arcasset = AVMUtils.createARC69Asset(asa_json);
 
 				// Grab the metadata
 				String metajson = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
@@ -187,7 +189,7 @@ public class Start {
 
 			// First we make sure the assetid represents an ARC
 			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-			AVMNFTStandard standard = AVMUtils.identifyARCStandard(json);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(json);
 			if (false ||
 					(standard == AVMNFTStandard.ARC3) ||
 					(standard == AVMNFTStandard.ARC19) ||
@@ -260,7 +262,7 @@ public class Start {
 			boolean convert_success = NFTUtils.convertERC721MetadataFolderToARC(ipfs_connector, settings.getFrom_erc_folder(), settings.getTo_arc3_folder(), AVMNFTStandard.ARC3, false);
 			LOGGER.info("convert status: " + convert_success);
 		}
-		
+
 		// arc69 convert
 		if ((settings.getAction() == Action.CONVERT) && (null != settings.getFrom_erc_folder()) && (null != settings.getTo_arc69_folder())) {
 			IPFSConnector ipfs_connector = new IPFSConnector();
@@ -268,6 +270,103 @@ public class Start {
 			LOGGER.info("convert status: " + convert_success);
 		}
 
+		// arc3 mint
+		if ((settings.getAction() == Action.MINT) && (null != settings.getMetadata_cid()) && (null != settings.getArcstandard()) && (null != settings.getWalletname())) {
+
+			// cleanup the cid path
+			if (settings.getMetadata_cid().startsWith("ipfs://")) {
+				String metadata_cid = settings.getMetadata_cid().replace("ipfs://", "");
+				settings.setMetadata_cid(metadata_cid);
+			}
+
+			// Make sure metadata exists and aligns with specified ARC standard
+			IPFSConnector ipfs_connector = new IPFSConnector();	
+			String metadata_json = ipfs_connector.getStringContent("ipfs://" + settings.getMetadata_cid());
+			System.out.println(JSONUtils.prettyPrint(metadata_json));
+			AVMNFTStandard identified_standard = AVMUtils.identifyARCStandardFromMetadata(metadata_json);
+			if (false ||
+					(identified_standard == settings.getArcstandard()) ||
+					((identified_standard == AVMNFTStandard.ARC3) && (settings.getArcstandard() == AVMNFTStandard.ARC19)) ||
+					false) {
+				// ARC3 metadata is ok for ARC19
+				if (identified_standard == settings.getArcstandard()) {
+					LOGGER.info("Identified standard " + identified_standard + " matches the specified");
+				} else {
+					LOGGER.info("Identified standard " + identified_standard + " is compatible with " + settings.getArcstandard());
+				}
+			} else {
+				LOGGER.error("ARC standard mismatch, ARC standard identified as " + identified_standard + " but specified as " + settings.getArcstandard());
+				SystemUtils.halt();
+			}
+
+			// Make sure the wallet exists
+			AlgoLocalWallet wallet = AVMUtils.getWalletWithName(settings.getWalletname());
+			if (null == wallet) {
+				LOGGER.error("Unable to find wallet with name " + settings.getWalletname());
+				SystemUtils.halt();
+			}
+			LOGGER.info("Using wallet with address " + wallet.getAddress() + " for minting");
+
+			String unitName = "";
+			String assetName = "";
+
+			if (settings.getArcstandard() == AVMNFTStandard.ARC3) {
+				ARC3MetaData arc3_metadata = JSONUtils.createARC3MetaData(metadata_json);
+				if (null == arc3_metadata.getName()) {
+					if (null == settings.getAsset_name()) {
+						LOGGER.warn("We have the metadata JSON but no name is defined and --asset_name was not specified");
+					} else {
+						LOGGER.info("Using specified --asset_name value");
+						assetName = settings.getAsset_name();
+					}
+				} else {
+					LOGGER.info("Using specified --asset_name value");
+					assetName = settings.getAsset_name();
+				}
+				if ("".equals(assetName)) {
+					LOGGER.error("Unable to determine suitable assetName for ARC asset");
+					SystemUtils.halt();
+				}
+
+				// unitName sanity check
+				if (null != settings.getUnit_name()) {
+					unitName = settings.getUnit_name();
+				} else {
+					unitName = NFTUtils.createUnitNameFromName(assetName);
+					LOGGER.info("Generated the unitName " + unitName + " from the assetName");
+				}
+				if ("".equals(unitName)) {
+					LOGGER.error("Unable to determine suitable unitName for ARC asset");
+					SystemUtils.halt();
+				}
+				if (unitName.length() > 8) {
+					LOGGER.error("UnitName for ARC asset needs to be less than 8 characters");
+					SystemUtils.halt();
+				}
+
+				// Create the arc3params
+				ARC3Asset arc3params = new ARC3Asset();
+				arc3params.setUnitName(unitName);
+				arc3params.setAssetName(assetName);
+				arc3params.setAssetURL("ipfs://" + settings.getMetadata_cid() + "#arc3");
+				arc3params.setTotalNrUnits(BigInteger.ONE);
+				arc3params.setDecimals(0);
+				arc3params.setDefaultFrozen(false);
+
+				byte[] sha256 = CryptUtils.calculateSHA256(metadata_json);
+				arc3params.setAssetMetadataHash(sha256);
+
+				arc3params.setManager(wallet.fetchAccount().getAddress());
+				arc3params.setReserve(wallet.fetchAccount().getAddress());
+				arc3params.setFreeze(wallet.fetchAccount().getAddress());
+				arc3params.setClawback(wallet.fetchAccount().getAddress());
+
+				// perform the mint
+				String txhash = AVMUtils.createARC3ASA(connector, wallet, arc3params);
+				LOGGER.info("txhash: " + txhash);
+
+			}
+		}
 	}
 
 	private static Settings parseCliArgs(String[] args) {
@@ -276,7 +375,7 @@ public class Start {
 		Options options = new Options();
 
 		// chain
-		Option chainOption = new Option(null, "chain", true, "Chain, MAINNET, BETANET or TESTNET");
+		Option chainOption = new Option(null, "chain", true, "The Algorand chain: MAINNET, BETANET or TESTNET");
 		options.addOption(chainOption);
 
 		// action
@@ -340,8 +439,8 @@ public class Start {
 		Option parsedOption = new Option(null, "parsed", false, "Parsed output format");
 		options.addOption(parsedOption);
 
-		// arctype
-		Option arctypeOption = new Option(null, "arctype", false, "ARC type of assetid");
+		// probe_arcstandard
+		Option arctypeOption = new Option(null, "probe_arcstandard", false, "Estimates ARC standard of assetid");
 		options.addOption(arctypeOption);
 
 		// metadata
@@ -364,13 +463,29 @@ public class Start {
 		Option from_erc_folderOption = new Option(null, "from_erc_folder", true, "Folder path to source ERC721 JSON metadata files to be converted to ARC");
 		options.addOption(from_erc_folderOption);
 
-		// to_arc3_folderOption
+		// to_arc3_folder
 		Option to_arc3_folderOption = new Option(null, "to_arc3_folder", true, "Folder path to target ARC3 JSON metadata files");
 		options.addOption(to_arc3_folderOption);
 
-		// to_arc69_folderOption
+		// to_arc69_folder
 		Option to_arc69_folderOption = new Option(null, "to_arc69_folder", true, "Folder path to target ARC69 JSON metadata files");
 		options.addOption(to_arc69_folderOption);
+
+		// metadata_cid
+		Option metadatacidOption = new Option(null, "metadata_cid", true, "IPFS CID of the metadata JSON file to be minted");
+		options.addOption(metadatacidOption);
+
+		// asset_name
+		Option asset_nameOption = new Option(null, "asset_name", true, "Name of asset to be minted (can be excluded if metadata has name properties)");
+		options.addOption(asset_nameOption);
+
+		// unit_name
+		Option unit_nameOption = new Option(null, "unit_name", true, "Unit name of asset to be minted (can be exluded if metadata has name properties)");
+		options.addOption(unit_nameOption);
+
+		// arcstandard
+		Option arcstandardOption = new Option(null, "arcstandard", true, "ARC standard to use for minting: ARC3, ARC19 or ARC69");
+		options.addOption(arcstandardOption);
 
 		HelpFormatter formatter = new HelpFormatter();
 		CommandLineParser parser = new DefaultParser();
@@ -396,6 +511,12 @@ public class Start {
 				if (cmd.getOptionValue("action").equalsIgnoreCase("CONVERT")) settings.setAction(Action.CONVERT);
 			}
 
+			if (cmd.hasOption("arcstandard")) {
+				if (cmd.getOptionValue("arcstandard").equalsIgnoreCase("ARC3")) settings.setArcstandard(AVMNFTStandard.ARC3);
+				if (cmd.getOptionValue("arcstandard").equalsIgnoreCase("ARC19")) settings.setArcstandard(AVMNFTStandard.ARC19);
+				if (cmd.getOptionValue("arcstandard").equalsIgnoreCase("ARC69")) settings.setArcstandard(AVMNFTStandard.ARC69);
+			}
+
 			if (cmd.hasOption("nodeurl")) settings.setNodeurl(cmd.getOptionValue("nodeurl"));
 			if (cmd.hasOption("nodeport")) settings.setNodeport(Integer.parseInt(cmd.getOptionValue("nodeport")));
 			if (cmd.hasOption("nodeauthtoken")) settings.setNodeauthtoken(cmd.getOptionValue("nodeauthtoken"));
@@ -418,7 +539,7 @@ public class Start {
 
 			if (cmd.hasOption("parsed")) settings.setParsed(true);
 			if (cmd.hasOption("raw")) settings.setRaw(true);
-			if (cmd.hasOption("arctype")) settings.setArctype(true);
+			if (cmd.hasOption("probe_arcstandard")) settings.setProbe_arcstandard(true);
 			if (cmd.hasOption("debug")) settings.setDebug(true);
 			if (cmd.hasOption("metadata")) settings.setMetadata(true);
 
@@ -429,6 +550,10 @@ public class Start {
 			if (cmd.hasOption("from_erc_folder")) settings.setFrom_erc_folder(cmd.getOptionValue("from_erc_folder"));
 			if (cmd.hasOption("to_arc3_folder")) settings.setTo_arc3_folder(cmd.getOptionValue("to_arc3_folder"));
 			if (cmd.hasOption("to_arc69_folder")) settings.setTo_arc69_folder(cmd.getOptionValue("to_arc69_folder"));
+
+			if (cmd.hasOption("metadata_cid")) settings.setMetadata_cid(cmd.getOptionValue("metadata_cid"));
+			if (cmd.hasOption("asset_name")) settings.setAsset_name(cmd.getOptionValue("asset_name"));
+			if (cmd.hasOption("unit_name")) settings.setUnit_name(cmd.getOptionValue("unit_name"));
 
 			settings.sanityCheck();
 			if (settings.isDebug()) settings.print();

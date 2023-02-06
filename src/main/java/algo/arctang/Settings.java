@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import algo.arctang.enums.Action;
 import crypto.forestfish.enums.avm.AVMChain;
+import crypto.forestfish.enums.avm.AVMNFTStandard;
 import crypto.forestfish.objects.avm.AlgoIndexerNode;
 import crypto.forestfish.objects.avm.AlgoRelayNode;
 import crypto.forestfish.objects.avm.model.chain.AVMChainInfo;
@@ -44,7 +45,7 @@ public class Settings {
 	private boolean safemode = true;
 	private boolean raw = false;
 	private boolean parsed = false;
-	private boolean arctype = false;
+	private boolean probe_arcstandard = false;
 	private boolean metadata = false;
 	
 	private String walletname;
@@ -54,6 +55,11 @@ public class Settings {
 	private String from_erc_folder;
 	private String to_arc3_folder;
 	private String to_arc69_folder;
+	
+	private String metadata_cid; 
+	private AVMNFTStandard arcstandard;
+	private String asset_name; 
+	private String unit_name; 
 	
 	private boolean debug = false;
 	
@@ -117,14 +123,6 @@ public class Settings {
 		this.parsed = parsed;
 	}
 
-	public boolean isArctype() {
-		return arctype;
-	}
-
-	public void setArctype(boolean arctype) {
-		this.arctype = arctype;
-	}
-
 	public boolean isDebug() {
 		return debug;
 	}
@@ -161,12 +159,6 @@ public class Settings {
 			// require chain
 			if (null == this.getChain()) {
 				LOGGER.error("You need to specify a chain, MAINNET, BETANET or TESTNET");
-				SystemUtils.halt();
-			}
-			
-			// Require defined Algorand node
-			if (chainInfo.getNodes().isEmpty()) {
-				LOGGER.error("You need to define a node for " + this.getChain() + " using --confignetwork since no public nodes are available");
 				SystemUtils.halt();
 			}
 			
@@ -211,6 +203,12 @@ public class Settings {
 						LOGGER.info("Flushing chainInfo to .avm/networks/" + chain.toString());
 						FilesUtils.writeToFileUNIXNoException(json, ".avm/networks/" + chain.toString());
 					}
+				}
+				
+				// Require defined Algorand node
+				if (chainInfo.getNodes().isEmpty()) {
+					LOGGER.error("You need to define a node for " + this.getChain() + " using --confignetwork since no public nodes are available");
+					SystemUtils.halt();
 				}
 				
 			} else {
@@ -397,6 +395,46 @@ public class Settings {
 
 	public void setTo_arc69_folder(String to_arc69_folder) {
 		this.to_arc69_folder = to_arc69_folder;
+	}
+
+	public AVMNFTStandard getArcstandard() {
+		return arcstandard;
+	}
+
+	public void setArcstandard(AVMNFTStandard arcstandard) {
+		this.arcstandard = arcstandard;
+	}
+
+	public boolean isProbe_arcstandard() {
+		return probe_arcstandard;
+	}
+
+	public void setProbe_arcstandard(boolean probe_arcstandard) {
+		this.probe_arcstandard = probe_arcstandard;
+	}
+
+	public String getMetadata_cid() {
+		return metadata_cid;
+	}
+
+	public void setMetadata_cid(String metadata_cid) {
+		this.metadata_cid = metadata_cid;
+	}
+
+	public String getAsset_name() {
+		return asset_name;
+	}
+
+	public void setAsset_name(String asset_name) {
+		this.asset_name = asset_name;
+	}
+
+	public String getUnit_name() {
+		return unit_name;
+	}
+
+	public void setUnit_name(String unit_name) {
+		this.unit_name = unit_name;
 	}
 
 }

@@ -1,6 +1,6 @@
 ## ARCTANG
 
-Swiss army knife to query/validate/transfer/convert/mint/update NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) (part of this project) for Algorand support. 
+Swiss army knife to query/validate/transfer/convert/mint NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) (part of this project) for Algorand support. 
 
 ![alt text](https://github.com/p00temkin/arctang/blob/master/img/arctang_r7.png?raw=true)
 
@@ -164,16 +164,16 @@ Note for EVM users: The indexer is similar to an archive node with various index
 
 ### Query for ASA type
 
-Note that this raw command works against any ASA type and highlights the differences between ARC3, ARC19 and ARC69. If you just want to identify the ARC type of an asset then you can use --arctype as shown below:
+Note that this raw command works against any ASA type and highlights the differences between ARC3, ARC19 and ARC69. If you just want to identify the ARC type of an asset then you can use --probe_arcstandard as shown below:
    
    ```
-	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 387411719 --arctype
+	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 387411719 --probe_arcstandard
 	ASA identified as: ARC3
 		
-	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --arctype
+	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --probe_arcstandard
 	ASA identified as: ARC19
 	
-	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078 --arctype
+	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078 --probe_arcstandard
 	ASA identified as: ARC69
    ```
 
@@ -504,8 +504,22 @@ Note that ARC19 does not have any specific requirements for the JSON metadata so
    
 ### Mint an ASA Asset
 
-### Reconfigure an ASA Asset
+In common for most NFTs on Algorand is the use of assetName and unitName, where unitName is restricted to 8 characters. When migrating Ethereum NFTs such as [Bored Ape Yacht Club](https://boredapeyachtclub.com/) can be difficult since it is missing a name in the metadata JSON. The arctang tool attempts to derive the assetname from the published IPFS metadata file, and then in turn generate a unit name from the assetname. If this doesnt work you can always override by using the --asset_name and --unit_name feature flags. Below is an example of minting from the boredapes_arc3 folder produced earlier, where the folder has been published to IPFS: 
 
+   ```
+   java -jar ./arctang.jar --walletname bob --chain TESTNET --action MINT --arcstandard ARC3 --metadata_cid QmXULvyXqRhhhMMtTHBSKpw3QzNRjLMMrn5wkpGpAehov4/0.json --asset_name "Bored Ape Yacht Club #0000"
+   
+   .. Updating list of active IPFS gateway URLs ..
+   .. Nr of active IPFS gateways: 15
+   .. Attempting to fetch ipfs://QmXULvyXqRhhhMMtTHBSKpw3QzNRjLMMrn5wkpGpAehov4/0.json
+   .. Identified standard ARC3 matches the specified
+   .. Using wallet with address P... for minting
+   .. Using specified --asset_name value
+   .. Generated the unitName BAYC0000 from the assetName
+   .. txhash: BPAEQV2KPWS5VJWK5
+
+   ```
+   
 ### Prerequisites
 
 [Java 17+, Maven 3.x]
@@ -533,29 +547,32 @@ Note that ARC19 does not have any specific requirements for the JSON metadata so
 Options:
 
    ```
-   --chain
-   --action
-   --nodeurl
-   --nodeport
-   --nodeauthtoken
-   --nodeauthtoken_key
-   --idxurl
-   --idxport
-   --idxauthtoken
-   --idxauthtoken_key
-   --assetid
-   --parsed
-   --raw
-   --arctype
-   --debug
-   --metadata
-   --walletname
-   --mnemonic
-   --to
-   --from_erc_folder
-   --to_arc3_folder
-   --to_arc19_folder
-   --to_arc69_folder
+   --chain					The Algorand chain: MAINNET, BETANET or TESTNET
+   --action					Action to perform: QUERY, VERIFY, TRANSFER, MINT, WALLETCONFIG, NETCONFIG, OPTIN, CONVERT
+   --nodeurl				The Algorand custom network node URL
+   --nodeport				The Algorand custom network node port
+   --nodeauthtoken			The Algorand custom network node authtoken
+   --nodeauthtoken_key		The Algorand custom network node authtoken keyname (defaults to X-Algo-API-Token)
+   --idxurl					The Algorand custom network indexer URL
+   --idxport				The Algorand custom network indexer port
+   --idxauthtoken			The Algorand custom network indexer authtoken
+   --idxauthtoken_key		The Algorand custom network indexer authtoken keyname (defaults to X-Algo-API-Token)
+   --assetid				The ASA assetID
+   --parsed					Parsed output format
+   --raw					Raw output format
+   --probe_arcstandard		Estimates ARC standard of assetid
+   --debug					Debug mode
+   --metadata				Grab the JSON metadata of ARC NFT with specified assetid
+   --walletname				Wallet name to use for specified action
+   --mnemonic				Mnemonic to use for creating an Algorand account. Use with --walletname
+   --to						Target account address for asset TRANSFER action
+   --from_erc_folder		Folder path to source ERC721 JSON metadata files to be converted to ARC
+   --to_arc3_folder			Folder path to target ARC3 JSON metadata files
+   --to_arc69_folder		Folder path to target ARC69 JSON metadata files
+   --metadata_cid			IPFS CID of the metadata JSON file to be minted
+   --arcstandard			ARC standard to use for minting: ARC3, ARC19 or ARC69
+   --asset_name				Name of asset to be minted (can be excluded if metadata has name properties)
+   --unit_name				Unit name of asset to be minted (can be exluded if metadata has name properties)
    ```
 
 ### Additional useful options/resources
