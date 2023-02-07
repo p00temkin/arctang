@@ -2,7 +2,8 @@
 
 Swiss army knife to query/validate/transfer/convert/mint NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) (part of this project) for Algorand support. 
 
-![alt text](https://github.com/p00temkin/arctang/blob/master/img/arctang_r7.png?raw=true)
+| ![alt text](https://github.com/p00temkin/arctang/blob/master/img/arctang_r7.png?raw=true) |
+| :--: |
 
 ### Quick introduction for EVM users
 On Ethereum an NFT is represented by a smart contract where the contract keeps track of its owners, burns etc. The smart contract represents the 'NFT collection' and all activity is handled by this contract. 
@@ -441,7 +442,8 @@ To convert a collection on Ethereum to Algorand, download all metadata JSON file
 
 If we try with a more rich ERC-721 such as [Luchadores](https://luchadores.io) we can see how onchain image data is kept as well, here with ARC69 metadata output:
 
-![alt text](https://github.com/p00temkin/arctang/blob/master/img/lucha_4044.png?raw=true)
+| ![alt text](https://github.com/p00temkin/arctang/blob/master/img/lucha_4044.png?raw=true) |
+| :--: |
 
    ```
    java -jar ./arctang.jar --action CONVERT --from_erc_folder ./luchadores_erc721 --to_arc69_folder ./luchadores_arc69
@@ -572,7 +574,8 @@ Lets create a 10/10 rated ARC3 on the Algorand network based on the [Luchadores]
 
 5. We then upload the 'luchadores_arc3' folder to IPFS and note the CID (Qmd95Cm5QAoDmtXRD7dD2PZox8EU19wfLXPVasm3fzNTYe), here using [Pinata](https://pinata.cloud):
 
-![alt text](https://github.com/p00temkin/arctang/blob/master/img/lucha_pinata.png?raw=true)
+| ![alt text](https://github.com/p00temkin/arctang/blob/master/img/lucha_pinata.png?raw=true) |
+| :--: |
 
 6. We then mint the ARC3 NFT using the IPFS CID as argument: 
 
