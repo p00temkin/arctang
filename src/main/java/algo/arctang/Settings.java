@@ -57,7 +57,8 @@ public class Settings {
 	private String to_arc69_folder;
 	
 	private String metadata_cid; 
-	private String mediadata_cid; 
+	private String mediadata_url; 
+	private String metadata_filepath; 
 	private AVMNFTStandard arcstandard;
 	private String asset_name; 
 	private String unit_name; 
@@ -247,18 +248,21 @@ public class Settings {
 
 		if ((this.getAction() == Action.WALLETCONFIG)) {
 			
-			if (null == this.getMnemonic()) {
-				LOGGER.error("Need to provide --mnemonic when using WALLETCONFIG action");
-				SystemUtils.halt();
-			}
 			if (null == this.getWalletname()) {
 				LOGGER.error("Need to provide --walletname when using WALLETCONFIG action");
 				SystemUtils.halt();
 			}
 			
-			boolean createdOrExists = AVMUtils.createWalletWithName(this.getWalletname(), this.getMnemonic());
-			if (!createdOrExists) LOGGER.error("Unable to create wallet with name " + this.getWalletname());
-			SystemUtils.halt();
+			if (null == this.getMnemonic()) {
+				boolean createdOrExists = AVMUtils.createNewRandomWalletWithName(this.getWalletname());
+				if (!createdOrExists) LOGGER.error("Unable to create wallet with name " + this.getWalletname());
+				SystemUtils.halt();
+			} else {
+				boolean createdOrExists = AVMUtils.createWalletWithName(this.getWalletname(), this.getMnemonic());
+				if (!createdOrExists) LOGGER.error("Unable to create wallet with name " + this.getWalletname());
+				SystemUtils.halt();
+			}
+
 		}
 		
 		if ((this.getAction() == Action.OPTIN)) {
@@ -521,12 +525,20 @@ public class Settings {
 		this.clearclawback = clearclawback;
 	}
 
-	public String getMediadata_cid() {
-		return mediadata_cid;
+	public String getMediadata_url() {
+		return mediadata_url;
 	}
 
-	public void setMediadata_cid(String mediadata_cid) {
-		this.mediadata_cid = mediadata_cid;
+	public void setMediadata_url(String mediadata_url) {
+		this.mediadata_url = mediadata_url;
+	}
+
+	public String getMetadata_filepath() {
+		return metadata_filepath;
+	}
+
+	public void setMetadata_filepath(String metadata_filepath) {
+		this.metadata_filepath = metadata_filepath;
 	}
 
 }

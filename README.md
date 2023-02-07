@@ -343,7 +343,7 @@ In order to transfer, mint or reconfigure ASAs we need an Algorand account to wo
 	.. Generated wallet from mnemonic with name bob with address ..
    ```
 
-This creates a walletfile in your local .avm/wallets folder (with the walletname 'bob' in this case) which can be used for future actions which requires an on-chain action. 
+This creates a walletfile in your local .avm/wallets folder (with the walletname 'bob' in this case) which can be used for future actions which requires an on-chain action. If you dont specify the mnemonic argument a random wallet will be generated for you which you then need to fund somehow (transfer from other account or using a faucet). 
 
 ### Opt-in to an ASA Asset
 
@@ -542,6 +542,161 @@ Arctang adds protection when performing any of these steps which can be seen by 
 	java -jar ./arctang.jar --walletname bob --chain TESTNET --action RECONFIG --assetid <assetid> --clearclawback
 	java -jar ./arctang.jar --walletname bob --chain TESTNET --action RECONFIG --assetid <assetid> --clearmanager
    ```
+Lets create a 10/10 rated ARC3 on the Algorand network based on the [Luchadores](https://luchadores.io) ERC-721 we used as an example earlier.
+
+![alt text](https://github.com/p00temkin/arctang/blob/master/img/lucha_4044.png?raw=true)
+
+1. First generate a new wallet named 'arctang':
+
+   ```
+	java -jar ./arctang.jar --action WALLETCONFIG --walletname arctang
+	
+	..  Generated wallet from mnemonic with name arctang with address D62ZQTP5UAY4AUDSUOT3U7KLHFMTESDTL6D4ZJ26LBMG4PJ2VWWC3YLTRQ
+   ```
+
+2. Fund the account using an Algorand faucet, such as https://testnet.algoexplorer.io/dispenser
+
+3. We download the metadata file from [OpenSea](https://opensea.io/assets/ethereum/0x8b4616926705fb61e9c4eeac07cd946a5d4b0760/4044) into a folder named 'luchadores_erc721'. 
+
+4. We then convert the metadata to ARC3 standard:
+
+   ```
+	java -jar ./arctang.jar --action CONVERT --from_erc_folder ./luchadores_erc721 --to_arc3_folder ./luchadores_arc3
+	
+	.. Updating list of active IPFS gateway URLs ..
+	.. Nr of active IPFS gateways: 14
+	..
+	.. convertion successful: true
+
+   ```
+
+5. We then upload the 'luchadores_arc3' folder to IPFS and note the cid (Qmd95Cm5QAoDmtXRD7dD2PZox8EU19wfLXPVasm3fzNTYe), here using [Pinata](https://pinata.cloud):
+
+![alt text](https://github.com/p00temkin/arctang/blob/master/img/lucha_pinata.png?raw=true)
+
+6. We then mint the ARC3 NFT using the IPFS cid as argument: 
+
+   ```
+	java -jar ./arctang.jar --walletname arctang --chain TESTNET --action MINT --arcstandard ARC3 --metadata_cid Qmd95Cm5QAoDmtXRD7dD2PZox8EU19wfLXPVasm3fzNTYe/4044.json
+	
+	.. Updating list of active IPFS gateway URLs ..
+	.. Nr of active IPFS gateways: 15
+	.. Attempting to fetch ipfs://Qmd95Cm5QAoDmtXRD7dD2PZox8EU19wfLXPVasm3fzNTYe/4044.json
+	.. Identified standard ARC3 matches the specified
+	.. Using wallet with address D62ZQTP5UAY4AUDSUOT3U7KLHFMTESDTL6D4ZJ26LBMG4PJ2VWWC3YLTRQ for minting
+	.. Generated the unitName L_4044 from the assetName
+	.. result: txhash=G7JC4VITOYBN7I3ISVJXMEFCHLQJTFJBPJZS6JDLKMR3YI5CPJIA assetid=157597369 confirmed=true
+   ```
+
+7. Now lets verify/rate our newly minted ARC3 NFT
+
+   ```
+	java -jar ./arctang.jar --chain TESTNET --action VERIFY --assetid 157597369
+	
+	.. Standard determined to be: ARC3
+	.. Updating list of active IPFS gateway URLs ..
+	.. Nr of active IPFS gateways: 16
+	.. Getting metadata from assetURL ipfs://Qmd95Cm5QAoDmtXRD7dD2PZox8EU19wfLXPVasm3fzNTYe/4044.json#arc3
+	.. Attempting to fetch ipfs://Qmd95Cm5QAoDmtXRD7dD2PZox8EU19wfLXPVasm3fzNTYe/4044.json
+	.. Attempting to fetch https://luchadores.io/luchador/4044 using https://c4rex.co/ipfs/
+	
+	Verified     : true
+	Score [0-10] : 6
+	-----------------------------------
+	Warnings:
+	 [#1] Manager address is set, NFT is mutable (not yours)
+	 [#2] Clawback address is set, ASA can be withdrawn (not yours)
+	 [#3] Freeze address is set, ASA can be frozen (restricted)
+	Verified parameters:
+	 [+] asset URL endswith #arc3 and name is not fixed to arc3 or contains @arc3
+	 [+] asset URL uses IPFS
+	 [+] Calculated metadata hash matches the ASA specified hash (KAxdha9sHefU894BRE8g7obw5X1xqGAQesNnNNXNQA0=)
+	 [+] Metadata name (Luchador #4044) related the ASA specified unit name (L_4044)
+	 [+] Calculated external_url_integrity hash matches the metadata specified hash (W+ChYOUVZx/mJ8M3nIKqK8kOO59tqcGoXyEMf6NqdwE=)
+
+   ```
+
+The NFT looks ok but is left at a score of 6/10 since all the 4 mutable addresses are set. 
+
+8. Make the NFT immutable 
+
+   ```
+	java -jar ./arctang.jar --walletname arctang --chain TESTNET --action RECONFIG --assetid 157597369 --force_immutable
+	
+	.. Using wallet with address D62ZQTP5UAY4AUDSUOT3U7KLHFMTESDTL6D4ZJ26LBMG4PJ2VWWC3YLTRQ for reconfig
+	.. Instructed to force the ASA into an immutable state
+	.. IMMUTABLE ASA action result: true
+   ```
+
+9. Verify that 10/10 rating ..
+
+   ```
+	java -jar ./arctang.jar --chain TESTNET --action VERIFY --assetid 157597369
+	
+	.. Standard determined to be: ARC3
+	.. Updating list of active IPFS gateway URLs ..
+	.. Nr of active IPFS gateways: 14
+	.. Getting metadata from assetURL ipfs://Qmd95Cm5QAoDmtXRD7dD2PZox8EU19wfLXPVasm3fzNTYe/4044.json#arc3
+	.. Attempting to fetch ipfs://Qmd95Cm5QAoDmtXRD7dD2PZox8EU19wfLXPVasm3fzNTYe/4044.json
+	.. Attempting to fetch https://luchadores.io/luchador/4044 using https://c4rex.co/ipfs/
+	
+	Verified     : true
+	Score [0-10] : 10
+	-----------------------------------
+	Verified parameters:
+	 [+] ASA is immutable since manager address is blank or set to ""
+	 [+] ASA cannot currently be withdrawn since clawback address is blank or set to ""
+	 [+] ASA cannot currently be frozen since freeze address is blacnk or set to ""
+	 [+] asset URL endswith #arc3 and name is not fixed to arc3 or contains @arc3
+	 [+] asset URL uses IPFS
+	 [+] Calculated metadata hash matches the ASA specified hash (KAxdha9sHefU894BRE8g7obw5X1xqGAQesNnNNXNQA0=)
+	 [+] Metadata name (Luchador #4044) related the ASA specified unit name (L_4044)
+	 [+] Calculated external_url_integrity hash matches the metadata specified hash (W+ChYOUVZx/mJ8M3nIKqK8kOO59tqcGoXyEMf6NqdwE=)
+   ```
+   
+The asset can then be found on https://testnet.algoexplorer.io/asset/157597369
+
+Note that for ARC69 the process is similar but you need to use --to_arc69_folder, --metadata_filepath and --mediadata_url instead while minting (and the IPFS CID should point to the actual mediafile, not the metadata JSON). Example below for re-minting a [MAYG](https://mayg.io/) NFT on Algorand:
+
+![alt text](https://github.com/p00temkin/arctang/blob/master/img/mayg_2596.png?raw=true)
+
+   ```
+	java -jar ./arctang.jar --action WALLETCONFIG --walletname may
+	.. Generated wallet from mnemonic with name may with address 4SUROY77T4U5ZBNF2IOBWUZBOWPPFGZRWO26NZZXNIUMWAUETDUQ3GKZ5Q
+	(use faucet)
+
+	java -jar ./arctang.jar --action CONVERT --from_erc_folder ./mayg_erc721/ --to_arc69_folder ./mayg_arc69
+	.. convert status: true
+
+	java -jar ./arctang.jar --walletname may --chain TESTNET --action MINT --arcstandard ARC69 --mediadata_url https://mayg.mypinata.cloud/ipfs/QmQFSAQc99frsfAncQihDRSm4N1U1RGcX1F59Uin6AZqXW/2596.png --metadata_filepath ./mayg_arc69/2596.json
+	.. Identified standard ARC69 matches the specified
+	.. Using metadata name as assetName: MAYG #2596 Sygne Princess
+	.. Generated the unitName M_2596SP from the assetName
+	.. result: txhash=DNBFLJ2FXPMJOAI6PLTYRQS3DY7NTAXCHTOQWPTAFBPEI3QHHKMQ assetid=157615784 confirmed=true
+
+	java -jar ./arctang.jar --walletname may --chain TESTNET --action RECONFIG --assetid 157615784 --force_immutable
+	.. Using wallet with address 4SUROY77T4U5ZBNF2IOBWUZBOWPPFGZRWO26NZZXNIUMWAUETDUQ3GKZ5Q for reconfig
+	.. Instructed to force the ASA into an immutable state
+	.. IMMUTABLE ASA action result: true
+
+	java -jar ./arctang.jar --chain TESTNET --action VERIFY --assetid 157615784
+	.. Standard determined to be: ARC69
+	.. Updating list of active IPFS gateway URLs ..
+
+	Verified     : true
+	Score [0-10] : 9
+	-----------------------------------
+	Warnings:
+	 [#1] ARC69 ASA media URL uses https:// instead of IPFS
+	Verified parameters:
+	 [+] ASA is immutable since manager address is blank or set to ""
+	 [+] ASA cannot currently be withdrawn since clawback address is blank or set to ""
+	 [+] ASA cannot currently be frozen since freeze address is blank or set to ""
+	 [+] ARC69 ASA media URL specifies media type using # fragment identifier
+	 [+] Metadata name (MAYG #2596 Sygne Princess) related the ASA specified unit name (M_2596SP)
+   ```
+
+As noted we end up with an ASA69 with a near perfect score. We could have manually fixed the score by replacing the https IPFS Pinata URL with a pure ipfs:// URL in the mint action above.  
 
 ### Destroying an ASA Asset
 
@@ -606,7 +761,8 @@ Options:
    --to_arc3_folder		Folder path to target ARC3 JSON metadata files
    --to_arc69_folder		Folder path to target ARC69 JSON metadata files
    --metadata_cid			IPFS CID of the metadata JSON file to be minted
-   --mediadata_cid			IPFS CID of the mediadata file to be minted
+   --mediadata_url			URL of the media data file to be minted
+   --metadata_filepath		Filepath to metadata to be minted (ARC69)
    --arcstandard			ARC standard to use for minting: ARC3, ARC19 or ARC69
    --asset_name			Name of asset to be minted (can be excluded if metadata has name properties)
    --unit_name			Unit name of asset to be minted (can be exluded if metadata has name properties)
@@ -625,10 +781,11 @@ Options:
 - Code cleanup and unit tests
 - Add more granular feature flags and control
 - Handle IPFS uploads during ARC minting
-- Add support for ARC3 'extra_metadata
+- Add support for ARC3 'extra_metadata'
 - Check nr of reconfigs for ARC69 as part of ARC asset rating
 - Include nr of pins on IPFS in ARC asset rating
-- Add metadata update action
+- Support mint/metadata update action for all arcs
+- Battletest across collections
 
 ### Closing thoughts, future projects
  
@@ -667,6 +824,7 @@ Misc:
 - <https://nftfactory.org/blog/algorand-nft-assembly-line>
 - <https://stackoverflow.com/questions/74052032/algorand-arc-19-and-arc-69-what-exaclty-is-the-difference>
 - <https://www.techdreams.org/crypto-currency/algorand-arc3-and-arc69-standard-nfts-overview/12382-20220118>
+- <https://gitcoin.co/hackathon/greenhouse3>
 
 ### BTW, is arctang really needed?
 
