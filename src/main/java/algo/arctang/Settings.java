@@ -57,6 +57,7 @@ public class Settings {
 	private String to_arc69_folder;
 	
 	private String metadata_cid; 
+	private String mediadata_cid; 
 	private AVMNFTStandard arcstandard;
 	private String asset_name; 
 	private String unit_name; 
@@ -518,6 +519,14 @@ public class Settings {
 
 	public void setClearclawback(boolean clearclawback) {
 		this.clearclawback = clearclawback;
+	}
+
+	public String getMediadata_cid() {
+		return mediadata_cid;
+	}
+
+	public void setMediadata_cid(String mediadata_cid) {
+		this.mediadata_cid = mediadata_cid;
 	}
 
 }

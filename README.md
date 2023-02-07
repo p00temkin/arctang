@@ -606,6 +606,7 @@ Options:
    --to_arc3_folder		Folder path to target ARC3 JSON metadata files
    --to_arc69_folder		Folder path to target ARC69 JSON metadata files
    --metadata_cid			IPFS CID of the metadata JSON file to be minted
+   --mediadata_cid			IPFS CID of the mediadata file to be minted
    --arcstandard			ARC standard to use for minting: ARC3, ARC19 or ARC69
    --asset_name			Name of asset to be minted (can be excluded if metadata has name properties)
    --unit_name			Unit name of asset to be minted (can be exluded if metadata has name properties)
@@ -631,7 +632,7 @@ Options:
 
 ### Closing thoughts, future projects
  
-- Since the ARC standards are new and allow for mutablility it seems most creators enable this functionality. This is very different from Ethereum and overall tells the user 'this NFT isnt really yours'. If the NFT manager wallet is compromised the entire collection can be destroyed with a single acfg command. Would be interesting to change this creator mindset and endorse immutability for top collections. Perhaps introduce a gamification aspect which transforms the NFT to an immutable state after some achievement. This would embrace the differences to Ethereum but still respect the ethos of immutable blockchains. 
+- Since the ARC standards are new and allow for mutability it seems most creators enable this functionality. This is very different from Ethereum and overall tells the user 'this NFT isnt really yours'. If the NFT manager wallet is compromised the entire collection can be destroyed with a single acfg command. Would be interesting to change this creator mindset and endorse immutability for top collections. Perhaps introduce a gamification aspect which transforms the NFT to an immutable state after some achievement. This would embrace the differences to Ethereum but still respect the ethos of immutable blockchain assets. 
 - On Algorand the NFT ARC standards seems to be lacking the concept of 'collection' or 'club', ie the 'smart contract clubhouse' when compared to Ethereum. Would be interesting to explore various paths to enable the same vibe on Algorand. 
 
 ### Additional useful options/resources
@@ -669,4 +670,4 @@ Misc:
 
 ### BTW, is arctang really needed?
 
-At the moment probably not. It was built with the intention to learn and be useful to others. The Algorand Java SDK pulls all the heavy lifting in this project and its rare to see a mature Java blockchain library. Development of this tool and improved Algorand support in forestfish will continue after this Hackathon. Hopefully it will have the potential to morph into something larger.
+At the moment probably not. It was built with the intention to learn and be useful to others. The Algorand Java SDK pulls all the heavy lifting in this project and its rare to see a mature Java blockchain library. Development of this tool and improved Algorand support in [ForestFISH](https://github.com/p00temkin/forestfish) will continue after this Hackathon.

@@ -162,7 +162,7 @@ public class Start {
 
 					// Grab the metadata
 					String metajson = ipfs_connector.getStringContent("ipfs://" + cid);
-					ARC69MetaData arcmetadata = JSONUtils.createARCMetaData(metajson);
+					ARC69MetaData arcmetadata = JSONUtils.createARC69MetaData(metajson);
 
 					ASAVerificationStatus vstatus = AVMUtils.verifyARC19Asset(ipfs_connector, arc19asset, arcmetadata, metajson);
 					System.out.println(vstatus.toString());
@@ -173,7 +173,7 @@ public class Start {
 
 				// Grab the metadata
 				String metajson = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
-				ARC69MetaData arcmetadata = JSONUtils.createARCMetaData(metajson);
+				ARC69MetaData arcmetadata = JSONUtils.createARC69MetaData(metajson);
 
 				IPFSConnector ipfs_connector = new IPFSConnector();
 
@@ -370,7 +370,7 @@ public class Start {
 				if ((null != mutables.getManager() && settings.isClearmanager())) {
 					LOGGER.info("Instructed to clear the manager address of the ASA (immutable state)");
 					mutables.setManager(null);
-					
+
 					if (true &&
 							(null == mutables.getFreeze()) &&
 							(null == mutables.getClawback()) &&
@@ -379,7 +379,7 @@ public class Start {
 						LOGGER.warn("The manager is the last address on this ASA, removing it will actually destroy the asset. Will add a fake reserve entry to the call to keep it intact.");
 						mutables.setReserve(wallet.fetchAccount().getAddress());
 					}
-					
+
 					nr_changes++;
 				}
 				if ((null != mutables.getReserve() && settings.isClearreserve())) {
@@ -445,8 +445,8 @@ public class Start {
 			LOGGER.info("Completed destroy action with txhash: " + txhash);
 		}
 
-		// arc3 mint
-		if ((settings.getAction() == Action.MINT) && (null != settings.getMetadata_cid()) && (null != settings.getArcstandard()) && (null != settings.getWalletname())) {
+		// arc mint
+		if ((settings.getAction() == Action.MINT) && (null != settings.getArcstandard()) && (null != settings.getWalletname())) {
 
 			// cleanup the cid path
 			if (settings.getMetadata_cid().startsWith("ipfs://")) {
@@ -485,7 +485,14 @@ public class Start {
 			String unitName = "";
 			String assetName = "";
 
+			// arc3 mint
 			if (settings.getArcstandard() == AVMNFTStandard.ARC3) {
+				
+				if (null == settings.getMetadata_cid()) {
+					LOGGER.error("For ARC3 mints you need to specify --metadata_cid");
+					SystemUtils.halt();
+				}
+				
 				ARC3MetaData arc3_metadata = JSONUtils.createARC3MetaData(metadata_json);
 				if (null == arc3_metadata.getName()) {
 					if (null == settings.getAsset_name()) {
@@ -539,7 +546,60 @@ public class Start {
 				// perform the mint
 				AVMCreateAssetResult result = AVMUtils.createARC3ASA(connector, wallet, arc3params);
 				LOGGER.info("result: " + result.toString());
+			}
 
+			// arc69 mint
+			if (settings.getArcstandard() == AVMNFTStandard.ARC69) {
+				ARC69MetaData arc69_metadata = JSONUtils.createARC69MetaData(metadata_json);
+				if (null == arc69_metadata.getName()) {
+					if (null == settings.getAsset_name()) {
+						LOGGER.warn("We have the metadata JSON but no name is defined and --asset_name was not specified");
+					} else {
+						LOGGER.info("Using specified --asset_name value");
+						assetName = settings.getAsset_name();
+					}
+				} else {
+					LOGGER.info("Using specified --asset_name value");
+					assetName = settings.getAsset_name();
+				}
+				if ("".equals(assetName)) {
+					LOGGER.error("Unable to determine suitable assetName for ARC asset");
+					SystemUtils.halt();
+				}
+
+				// unitName sanity check
+				if (null != settings.getUnit_name()) {
+					unitName = settings.getUnit_name();
+				} else {
+					unitName = NFTUtils.createUnitNameFromName(assetName);
+					LOGGER.info("Generated the unitName " + unitName + " from the assetName");
+				}
+				if ("".equals(unitName)) {
+					LOGGER.error("Unable to determine suitable unitName for ARC asset");
+					SystemUtils.halt();
+				}
+				if (unitName.length() > 8) {
+					LOGGER.error("UnitName for ARC asset needs to be less than 8 characters");
+					SystemUtils.halt();
+				}
+
+				// Create the arc69params
+				ARC69Asset arc69params = new ARC69Asset();
+				arc69params.setUnitName(unitName);
+				arc69params.setAssetName(assetName);
+				arc69params.setAssetURL("ipfs://" + settings.getMediadata_cid());
+				arc69params.setTotalNrUnits(BigInteger.ONE);
+				arc69params.setDecimals(0);
+				arc69params.setDefaultFrozen(false);
+
+				arc69params.setManager(wallet.fetchAccount().getAddress());
+				arc69params.setReserve(wallet.fetchAccount().getAddress());
+				arc69params.setFreeze(wallet.fetchAccount().getAddress());
+				arc69params.setClawback(wallet.fetchAccount().getAddress());
+
+				// perform the mint
+				AVMCreateAssetResult result = AVMUtils.createARC69ASA(connector, wallet, arc69params, metadata_json);
+				LOGGER.info("result: " + result.toString());
 			}
 		}
 	}
@@ -649,6 +709,10 @@ public class Start {
 		// metadata_cid
 		Option metadatacidOption = new Option(null, "metadata_cid", true, "IPFS CID of the metadata JSON file to be minted");
 		options.addOption(metadatacidOption);
+		
+		// mediadata_cid
+		Option mediadata_cidOption = new Option(null, "mediadata_cid", true, "IPFS CID of the mediadata file to be minted");
+		options.addOption(mediadata_cidOption);
 
 		// asset_name
 		Option asset_nameOption = new Option(null, "asset_name", true, "Name of asset to be minted (can be excluded if metadata has name properties)");
@@ -764,6 +828,7 @@ public class Start {
 			if (cmd.hasOption("to_arc69_folder")) settings.setTo_arc69_folder(cmd.getOptionValue("to_arc69_folder"));
 
 			if (cmd.hasOption("metadata_cid")) settings.setMetadata_cid(cmd.getOptionValue("metadata_cid"));
+			if (cmd.hasOption("mediadata_cid")) settings.setMediadata_cid(cmd.getOptionValue("mediadata_cid"));
 			if (cmd.hasOption("asset_name")) settings.setAsset_name(cmd.getOptionValue("asset_name"));
 			if (cmd.hasOption("unit_name")) settings.setUnit_name(cmd.getOptionValue("unit_name"));
 
