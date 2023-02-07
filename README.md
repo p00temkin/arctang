@@ -658,7 +658,9 @@ The asset can then be found on https://testnet.algoexplorer.io/asset/157597369
 
 Note that for ARC69 the process is similar but you need to use --to_arc69_folder, --metadata_filepath and --mediadata_url instead while minting (and the IPFS CID should point to the actual mediafile, not the metadata JSON). Example below for re-minting a [MAYG](https://mayg.io/) NFT on Algorand:
 
-    ![alt text](https://github.com/p00temkin/arctang/blob/master/img/mayg_2596.png?raw=true)
+<p align="center">
+![alt text](https://github.com/p00temkin/arctang/blob/master/img/mayg_2596.png?raw=true)
+</p>
 
    ```
 	java -jar ./arctang.jar --action WALLETCONFIG --walletname may
