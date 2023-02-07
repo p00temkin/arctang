@@ -441,6 +441,8 @@ To convert a collection on Ethereum to Algorand, download all metadata JSON file
 
 If we try with a more rich ERC-721 such as [Luchadores](https://luchadores.io) we can see how onchain image data is kept as well, here with ARC69 metadata output:
 
+![alt text](https://github.com/p00temkin/arctang/blob/master/img/lucha_4044.png?raw=true)
+
    ```
    java -jar ./arctang.jar --action CONVERT --from_erc_folder ./luchadores_erc721 --to_arc69_folder ./luchadores_arc69
    	
@@ -529,7 +531,7 @@ This one turned out to be quite tricky. If your wallet is listed as "Manager add
 - Freeze address
 - Clawback address
 
-Every reconfiguration made to the ASA asset needs to re-apply the previous values, otherwise they will be cleared and thus become immutable. If an ASA ARC was minted with all 4 addresses set, you need two transactions to purge all addresses from the ASA: First clear all addresses except the Manager address, then clear the Manager address but attempt to set any of the other 3 addresses at the same time. Clearing all of the 4 addresses at the same time does not leave the ASA in an immutable state, it instead destroys the ASA. Note that for ARC19 NFTs the Reserve address needs to be kept intact (used to resolve the IPFS cid of metadata file).
+Every reconfiguration made to the ASA asset needs to re-apply the previous values, otherwise they will be cleared and thus become immutable. If an ASA ARC was minted with all 4 addresses set, you need two transactions to purge all addresses from the ASA: First clear all addresses except the Manager address, then clear the Manager address but attempt to set any of the other 3 addresses at the same time. Clearing all of the 4 addresses at the same time does not leave the ASA in an immutable state, it instead destroys the ASA. Note that for ARC19 NFTs the Reserve address needs to be kept intact (used to resolve the IPFS CID of metadata file).
 
 Arctang adds protection when performing any of these steps which can be seen by running the sequence below and checking the ASA state after each execution:
 
@@ -543,8 +545,6 @@ Arctang adds protection when performing any of these steps which can be seen by 
 	java -jar ./arctang.jar --walletname bob --chain TESTNET --action RECONFIG --assetid <assetid> --clearmanager
    ```
 Lets create a 10/10 rated ARC3 on the Algorand network based on the [Luchadores](https://luchadores.io) ERC-721 we used as an example earlier.
-
-![alt text](https://github.com/p00temkin/arctang/blob/master/img/lucha_4044.png?raw=true)
 
 1. First generate a new wallet named 'arctang':
 
@@ -570,11 +570,11 @@ Lets create a 10/10 rated ARC3 on the Algorand network based on the [Luchadores]
 
    ```
 
-5. We then upload the 'luchadores_arc3' folder to IPFS and note the cid (Qmd95Cm5QAoDmtXRD7dD2PZox8EU19wfLXPVasm3fzNTYe), here using [Pinata](https://pinata.cloud):
+5. We then upload the 'luchadores_arc3' folder to IPFS and note the CID (Qmd95Cm5QAoDmtXRD7dD2PZox8EU19wfLXPVasm3fzNTYe), here using [Pinata](https://pinata.cloud):
 
 ![alt text](https://github.com/p00temkin/arctang/blob/master/img/lucha_pinata.png?raw=true)
 
-6. We then mint the ARC3 NFT using the IPFS cid as argument: 
+6. We then mint the ARC3 NFT using the IPFS CID as argument: 
 
    ```
 	java -jar ./arctang.jar --walletname arctang --chain TESTNET --action MINT --arcstandard ARC3 --metadata_cid Qmd95Cm5QAoDmtXRD7dD2PZox8EU19wfLXPVasm3fzNTYe/4044.json
@@ -658,7 +658,7 @@ The asset can then be found on https://testnet.algoexplorer.io/asset/157597369
 
 Note that for ARC69 the process is similar but you need to use --to_arc69_folder, --metadata_filepath and --mediadata_url instead while minting (and the IPFS CID should point to the actual mediafile, not the metadata JSON). Example below for re-minting a [MAYG](https://mayg.io/) NFT on Algorand:
 
-![alt text](https://github.com/p00temkin/arctang/blob/master/img/mayg_2596.png?raw=true)
+    ![alt text](https://github.com/p00temkin/arctang/blob/master/img/mayg_2596.png?raw=true)
 
    ```
 	java -jar ./arctang.jar --action WALLETCONFIG --walletname may
