@@ -516,19 +516,55 @@ In common for most NFTs on Algorand is the use of assetName and unitName, where 
    .. Using wallet with address P... for minting
    .. Using specified --asset_name value
    .. Generated the unitName BAYC0000 from the assetName
-   .. txhash: BPAEQV2KPWS5VJWK5
+   .. result: txhash=ORQIZMM.... assetid=157.. confirmed=true
 
    ```
+
+### Reconfigure an ASA Asset
+
+This one turned out to be quite tricky. If your wallet is listed as "Manager address" you are able to update the four mutable addresses of the ASA: 
+
+- Manager address
+- Reserve address
+- Freeze address
+- Clawback address
+
+Every reconfiguration made to the ASA asset needs to re-apply the previous values, otherwise they will be cleared and thus become immutable. If an ASA ARC was minted with all 4 addresses set, you need two transactions to purge all addresses from the ASA: First clear all addresses except the Manager address, then clear the Manager address but attempt to set any of the other 3 addresses at the same time. Clearing all of the 4 addresses at the same time does not leave the ASA in an immutable state, it instead destroys the ASA. Note that for ARC19 NFTs the Reserve address needs to be kept intact (used to resolve the IPFS cid of metadata file).
+
+Arctang adds protection when performing any of these steps which can be seen by running the sequence below and checking the ASA state after each execution:
+
+   ```
+	java -jar ./arctang.jar --walletname bob --chain TESTNET --action RECONFIG --assetid <assetid> --clawback <new address>
+	java -jar ./arctang.jar --walletname bob --chain TESTNET --action RECONFIG --assetid <assetid> --freeze <new address>
+	java -jar ./arctang.jar --walletname bob --chain TESTNET --action RECONFIG --assetid <assetid> --reserve <new address>
+	java -jar ./arctang.jar --walletname bob --chain TESTNET --action RECONFIG --assetid <assetid> --clearreserve
+	java -jar ./arctang.jar --walletname bob --chain TESTNET --action RECONFIG --assetid <assetid> --clearfreeze
+	java -jar ./arctang.jar --walletname bob --chain TESTNET --action RECONFIG --assetid <assetid> --clearclawback
+	java -jar ./arctang.jar --walletname bob --chain TESTNET --action RECONFIG --assetid <assetid> --clearmanager
+   ```
+
+### Destroying an ASA Asset
+
+As long as the manager address is still intact in the ASA, the entire NFT collection can be destroyed by sending a reconfigure transaction to the assetid with none of the 4 mutable addresses set. With arctang you can do this with the DESTROY action as shown below: 
+
+   ```
+   java -jar ./arctang.jar --chain TESTNET --walletname bob --action DESTROY --assetid <assetid>
    
+   .. Using wallet with address PO.. to destroy asset
+   .. Completed destroy action with txhash: F4UVVIDU4W..
+   ```
+
+Destroying an ARC asset is done
+
 ### Prerequisites
 
 [Java 17+, Maven 3.x]
 
    ```
- java -version # jvm 17+ required
- mvn -version # maven 3.x required
- git clone https://github.com/p00temkin/forestfish
- mvn clean package install
+   java -version # jvm 17+ required
+   mvn -version # maven 3.x required
+   git clone https://github.com/p00temkin/forestfish
+   mvn clean package install
    ```
 
 ### Building the application
@@ -548,7 +584,7 @@ Options:
 
    ```
    --chain				The Algorand chain: MAINNET, BETANET or TESTNET
-   --action			Action to perform: QUERY, VERIFY, TRANSFER, MINT, WALLETCONFIG, NETCONFIG, OPTIN, CONVERT
+   --action			Action to perform: QUERY, VERIFY, TRANSFER, MINT, WALLETCONFIG, NETCONFIG, OPTIN, CONVERT, DESTROY
    --nodeurl			The Algorand custom network node URL
    --nodeport			The Algorand custom network node port
    --nodeauthtoken			The Algorand custom network node authtoken
@@ -573,7 +609,30 @@ Options:
    --arcstandard			ARC standard to use for minting: ARC3, ARC19 or ARC69
    --asset_name			Name of asset to be minted (can be excluded if metadata has name properties)
    --unit_name			Unit name of asset to be minted (can be exluded if metadata has name properties)
+   --manager			The new manager address to be set with RECONFIG action
+   --reserve			The new reserve address to be set with RECONFIG action
+   --freeze				The new freeze address to be set with RECONFIG action
+   --clawback			The new clawback address to be set with RECONFIG action
+   --clearmanager		The new manager address to be set with RECONFIG action
+   --clearreserve		The new reserve address to be set with RECONFIG action
+   --clearfreeze		The new freeze address to be set with RECONFIG action
+   --clearclawback		The new clawback address to be set with RECONFIG action
+   --force_immutable	Force the specified ASA to be fully immutable
    ```
+
+### Next steps
+- Code cleanup and unit tests
+- Add more granular feature flags and control
+- Handle IPFS uploads during ARC minting
+- Add support for ARC3 'extra_metadata
+- Check nr of reconfigs for ARC69 as part of ARC asset rating
+- Include nr of pins on IPFS in ARC asset rating
+- Add metadata update action
+
+### Closing thoughts, future projects
+ 
+- Since the ARC standards are new and allow for mutablility it seems most creators enable this functionality. This is very different from Ethereum and overall tells the user 'this NFT isnt really yours'. If the NFT manager wallet is compromised the entire collection can be destroyed with a single acfg command. Would be interesting to change this creator mindset and endorse immutability for top collections. Perhaps introduce a gamification aspect which transforms the NFT to an immutable state after some achievement. This would embrace the differences to Ethereum but still respect the ethos of immutable blockchains. 
+- On Algorand the NFT ARC standards seems to be lacking the concept of 'collection' or 'club', ie the 'smart contract clubhouse' when compared to Ethereum. Would be interesting to explore various paths to enable the same vibe on Algorand. 
 
 ### Additional useful options/resources
 
@@ -607,3 +666,7 @@ Misc:
 - <https://nftfactory.org/blog/algorand-nft-assembly-line>
 - <https://stackoverflow.com/questions/74052032/algorand-arc-19-and-arc-69-what-exaclty-is-the-difference>
 - <https://www.techdreams.org/crypto-currency/algorand-arc3-and-arc69-standard-nfts-overview/12382-20220118>
+
+### BTW, is arctang really needed?
+
+At the moment probably not. It was built with the intention to learn and be useful to others. The Algorand Java SDK pulls all the heavy lifting in this project and its rare to see a mature Java blockchain library. Development of this tool and improved Algorand support in forestfish will continue after this Hackathon. Hopefully it will have the potential to morph into something larger.

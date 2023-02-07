@@ -60,6 +60,15 @@ public class Settings {
 	private AVMNFTStandard arcstandard;
 	private String asset_name; 
 	private String unit_name; 
+	private String manager;
+	private String reserve;
+	private String freeze;
+	private String clawback;
+	private boolean force_immutable = false;
+	private boolean clearmanager = false;
+	private boolean clearreserve = false;
+	private boolean clearfreeze = false;
+	private boolean clearclawback = false;
 	
 	private boolean debug = false;
 	
@@ -147,6 +156,7 @@ public class Settings {
 		}
 		
 		if (false ||
+				// all actions which require a tx
 				(this.getAction() == Action.QUERY) ||
 				(this.getAction() == Action.MINT) ||
 				(this.getAction() == Action.RECONFIG) ||
@@ -154,6 +164,7 @@ public class Settings {
 				(this.getAction() == Action.VERIFY) ||
 				(this.getAction() == Action.NETCONFIG) ||
 				(this.getAction() == Action.OPTIN) ||
+				(this.getAction() == Action.DESTROY) ||
 				false) {
 
 			// require chain
@@ -435,6 +446,78 @@ public class Settings {
 
 	public void setUnit_name(String unit_name) {
 		this.unit_name = unit_name;
+	}
+
+	public String getManager() {
+		return manager;
+	}
+
+	public void setManager(String manager) {
+		this.manager = manager;
+	}
+
+	public String getReserve() {
+		return reserve;
+	}
+
+	public void setReserve(String reserve) {
+		this.reserve = reserve;
+	}
+
+	public String getFreeze() {
+		return freeze;
+	}
+
+	public void setFreeze(String freeze) {
+		this.freeze = freeze;
+	}
+
+	public String getClawback() {
+		return clawback;
+	}
+
+	public void setClawback(String clawback) {
+		this.clawback = clawback;
+	}
+
+	public boolean isForce_immutable() {
+		return force_immutable;
+	}
+
+	public void setForce_immutable(boolean force_immutable) {
+		this.force_immutable = force_immutable;
+	}
+
+	public boolean isClearmanager() {
+		return clearmanager;
+	}
+
+	public void setClearmanager(boolean clearmanager) {
+		this.clearmanager = clearmanager;
+	}
+
+	public boolean isClearreserve() {
+		return clearreserve;
+	}
+
+	public void setClearreserve(boolean clearreserve) {
+		this.clearreserve = clearreserve;
+	}
+
+	public boolean isClearfreeze() {
+		return clearfreeze;
+	}
+
+	public void setClearfreeze(boolean clearfreeze) {
+		this.clearfreeze = clearfreeze;
+	}
+
+	public boolean isClearclawback() {
+		return clearclawback;
+	}
+
+	public void setClearclawback(boolean clearclawback) {
+		this.clearclawback = clearclawback;
 	}
 
 }

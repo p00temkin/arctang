@@ -17,7 +17,8 @@ import com.algorand.algosdk.crypto.Address;
 import algo.arctang.enums.Action;
 import crypto.forestfish.enums.avm.AVMChain;
 import crypto.forestfish.enums.avm.AVMNFTStandard;
-import crypto.forestfish.objects.avm.AVMAccountASABalance;
+import crypto.forestfish.objects.avm.AVMASAMutables;
+import crypto.forestfish.objects.avm.AVMCreateAssetResult;
 import crypto.forestfish.objects.avm.AlgoLocalWallet;
 import crypto.forestfish.objects.avm.connector.AVMBlockChainConnector;
 import crypto.forestfish.objects.avm.model.nft.ARC19Asset;
@@ -29,12 +30,9 @@ import crypto.forestfish.objects.avm.model.nft.metadata.ARC69MetaData;
 import crypto.forestfish.objects.ipfs.connector.IPFSConnector;
 import crypto.forestfish.utils.AVMUtils;
 import crypto.forestfish.utils.CryptUtils;
-import crypto.forestfish.utils.FilesUtils;
 import crypto.forestfish.utils.JSONUtils;
 import crypto.forestfish.utils.NFTUtils;
-import crypto.forestfish.utils.StringsUtils;
 import crypto.forestfish.utils.SystemUtils;
-import io.ipfs.multihash.Multihash;
 
 public class Start {
 
@@ -70,8 +68,8 @@ public class Start {
 
 		// raw output
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isRaw()) {
-			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-			System.out.println(json);
+			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
+			System.out.println(asa_json);
 		}
 
 		// parsed output
@@ -88,8 +86,8 @@ public class Start {
 				System.out.println(arcasset.toString());
 			}
 			if (standard == AVMNFTStandard.ARC69) {
-				ARC69Asset arcasset = AVMUtils.getARC69Info(connector, settings.getAssetid());
-				System.out.println(arcasset.toString());
+				ARC69Asset arc69asset = AVMUtils.getARC69Info(connector, settings.getAssetid());
+				System.out.println(arc69asset.toString());
 			}
 		}
 
@@ -101,11 +99,11 @@ public class Start {
 
 		// metadata
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isMetadata()) {
-			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
+			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(json);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json);
 			if (standard == AVMNFTStandard.ARC3) {
-				ARC3Asset arcasset = AVMUtils.createARC3Asset(json);
+				ARC3Asset arcasset = AVMUtils.createARC3Asset(asa_json);
 
 				System.out.println("assetURL: " + arcasset.getAssetURL());
 				IPFSConnector ipfs_connector = new IPFSConnector();
@@ -115,7 +113,7 @@ public class Start {
 				System.out.println(JSONUtils.prettyPrint(metajson));
 			}
 			if (standard == AVMNFTStandard.ARC19) {
-				ARC19Asset arcasset = AVMUtils.createARC19Asset(json);
+				ARC19Asset arcasset = AVMUtils.createARC19Asset(asa_json);
 				String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arcasset.getAssetURL(), arcasset.getReserve().toString());
 
 				if (!"".equals(cid)) {
@@ -128,7 +126,7 @@ public class Start {
 				}
 			}
 			if (standard == AVMNFTStandard.ARC69) {
-				ARC69Asset arcasset = AVMUtils.createARC69Asset(json);
+				ARC69Asset arcasset = AVMUtils.createARC69Asset(asa_json);
 
 				LOGGER.info("Using indexer to fetch latest tx note ..");
 				String latesttxnote = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
@@ -184,12 +182,12 @@ public class Start {
 			}
 		}
 
-		// optin
+		// opt-in
 		if ((settings.getAction() == Action.OPTIN) && (null != settings.getAssetid()) && (null != settings.getWalletname())) {
 
 			// First we make sure the assetid represents an ARC
-			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(json);
+			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json);
 			if (false ||
 					(standard == AVMNFTStandard.ARC3) ||
 					(standard == AVMNFTStandard.ARC19) ||
@@ -268,6 +266,183 @@ public class Start {
 			IPFSConnector ipfs_connector = new IPFSConnector();
 			boolean convert_success = NFTUtils.convertERC721MetadataFolderToARC(ipfs_connector, settings.getFrom_erc_folder(), settings.getTo_arc69_folder(), AVMNFTStandard.ARC69, false);
 			LOGGER.info("convert status: " + convert_success);
+		}
+
+		// arc reconfig
+		if ((settings.getAction() == Action.RECONFIG) && (null != settings.getWalletname()) && (null != settings.getAssetid())) {
+			System.out.println("reconfig");
+
+			// Make sure the wallet exists
+			AlgoLocalWallet wallet = AVMUtils.getWalletWithName(settings.getWalletname());
+			if (null == wallet) {
+				LOGGER.error("Unable to find wallet with name " + settings.getWalletname());
+				SystemUtils.halt();
+			}
+			LOGGER.info("Using wallet with address " + wallet.getAddress() + " for reconfig");
+
+			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json);
+
+			AVMASAMutables mutables = null;
+			if (standard == AVMNFTStandard.ARC3) {
+				ARC3Asset arc3asset = AVMUtils.createARC3Asset(asa_json);
+				mutables = new AVMASAMutables(arc3asset.getManager(), arc3asset.getReserve(), arc3asset.getFreeze(), arc3asset.getClawback());
+			}
+			if (standard == AVMNFTStandard.ARC19) {
+				ARC19Asset arc19asset = AVMUtils.createARC19Asset(asa_json);
+				mutables = new AVMASAMutables(arc19asset.getManager(), arc19asset.getReserve(), arc19asset.getFreeze(), arc19asset.getClawback());
+			}
+			if (standard == AVMNFTStandard.ARC69) {
+				ARC69Asset arc69asset = AVMUtils.createARC69Asset(asa_json);
+				mutables = new AVMASAMutables(arc69asset.getManager(), arc69asset.getReserve(), arc69asset.getFreeze(), arc69asset.getClawback());
+			}
+			//mutables.printStatus();
+
+			if (settings.isClearclawback() && settings.isClearfreeze() && settings.isClearmanager() && settings.isClearreserve()) {
+				LOGGER.warn("Clearing all mutable ASA addresses will actually destroy the asset. "
+						+ "Please use --force_immutable with RECONFIG action if your intention is to make the asset immutable. "
+						+ "If you actually want to destroy it use the DESTROY action.");
+				SystemUtils.halt();
+			}
+			if (mutables.allImmutable()) {
+				LOGGER.error("No need to attempt to reconfigure this ASA since all 4 addresses (manager/reserve/freeze/clawback) are immutable");
+				SystemUtils.halt();
+			}
+			if (null == mutables.getManager()) {
+				LOGGER.error("No need to attempt to reconfigure this ASA since the manager address is immutable");
+				SystemUtils.halt();
+			}
+			if (true &&
+					(null == settings.getManager()) &&
+					(null == settings.getReserve()) &&
+					(null == settings.getFreeze()) &&
+					(null == settings.getClawback()) &&
+					(!settings.isClearmanager()) &&
+					(!settings.isClearreserve()) &&
+					(!settings.isClearfreeze()) &&
+					(!settings.isClearclawback()) &&
+					(!settings.isForce_immutable()) &&
+					true) {
+				LOGGER.error("RECONFIG action selected but none of the mutable addresses (manager/reserve/freeze/clawback) or --force_immutable are specified on the command line");
+				SystemUtils.halt();
+			}
+
+			int nr_changes = 0;
+			try {
+				if (null != settings.getManager()) {
+					if (settings.getManager() !=  mutables.getManager().toString()) {
+						LOGGER.info("Instructed to modify the ASA manager address");
+						mutables.setManager(new Address(settings.getManager()));
+						nr_changes++;
+					}
+				}
+				if (null != settings.getReserve()) {
+					if (null == mutables.getReserve()) {
+						LOGGER.info("The ASA reserve address is already immutable, unable to perform your requested action");
+					} else if (settings.getReserve() !=  mutables.getReserve().toString()) {
+						LOGGER.info("Instructed to modify the ASA reserve address");
+						mutables.setReserve(new Address(settings.getReserve()));
+						nr_changes++;
+					}
+				}
+				if (null != settings.getFreeze()) {
+					if (null == mutables.getFreeze()) {
+						LOGGER.info("The ASA freeze address is already immutable, unable to perform your requested action");
+					} else if (settings.getFreeze() !=  mutables.getFreeze().toString()) {
+						LOGGER.info("Instructed to modify the ASA freeze address");
+						mutables.setFreeze(new Address(settings.getFreeze()));
+						nr_changes++;
+					}
+				}
+				if (null != settings.getClawback()) {
+					if (null == mutables.getClawback()) {
+						LOGGER.info("The ASA clawback address is already immutable, unable to perform your requested action");
+					} else if (settings.getClawback() !=  mutables.getClawback().toString()) {
+						LOGGER.info("Instructed to modify the ASA clawback address");
+						mutables.setClawback(new Address(settings.getClawback()));
+						nr_changes++;
+					}
+				}
+				if (settings.isForce_immutable()) {
+					LOGGER.info("Instructed to force the ASA into an immutable state");
+					nr_changes++;
+				}
+				if ((null != mutables.getManager() && settings.isClearmanager())) {
+					LOGGER.info("Instructed to clear the manager address of the ASA (immutable state)");
+					mutables.setManager(null);
+					
+					if (true &&
+							(null == mutables.getFreeze()) &&
+							(null == mutables.getClawback()) &&
+							(null == mutables.getReserve()) &&
+							true) {
+						LOGGER.warn("The manager is the last address on this ASA, removing it will actually destroy the asset. Will add a fake reserve entry to the call to keep it intact.");
+						mutables.setReserve(wallet.fetchAccount().getAddress());
+					}
+					
+					nr_changes++;
+				}
+				if ((null != mutables.getReserve() && settings.isClearreserve())) {
+					LOGGER.info("Instructed to clear the reserve address of the ASA");
+					mutables.setReserve(null);
+					nr_changes++;
+				}
+				if ((null != mutables.getClawback() && settings.isClearclawback())) {
+					LOGGER.info("Instructed to clear the clawback address of the ASA");
+					mutables.setClawback(null);
+					nr_changes++;
+				}
+				if ((null != mutables.getFreeze() && settings.isClearfreeze())) {
+					LOGGER.info("Instructed to clear the freeze address of the ASA");
+					mutables.setFreeze(null);
+					nr_changes++;
+				}
+			} catch (Exception e) {
+				LOGGER.error("Invalid arguments provided. Exception: " + e.getMessage());
+				SystemUtils.halt();
+			}
+
+			if (nr_changes == 0) {
+				LOGGER.warn("No need to attempt to reconfigure this ASA since no changes need to be applied");
+				SystemUtils.halt();
+			}
+
+			if (settings.isForce_immutable()) {
+				if (standard == AVMNFTStandard.ARC19) {
+					// We need to save the reserve address for ARC19
+					if (null == mutables.getReserve()) {
+						LOGGER.error("You need to preserve the reserve address for ARC19 ASA to make it immutable (and useful)");
+						SystemUtils.halt();
+					} else {
+						boolean success = AVMUtils.makeASAImmutableLeavingReserve(connector, wallet, settings.getAssetid(), true, mutables.getReserve());
+						LOGGER.info("IMMUTABLE ASA action result (leaving reserve): " + success);
+					}
+				} else {
+					boolean success = AVMUtils.makeASAImmutable(connector, wallet, settings.getAssetid(), true);
+					LOGGER.info("IMMUTABLE ASA action result: " + success);
+				}
+
+			} else {
+				// perform the RECONFIG action
+				String txhash = AVMUtils.reconfigureARCASA(connector, wallet, settings.getAssetid(), mutables, true);
+				LOGGER.info("RECONFIG txhash: " + txhash);
+			}
+
+		}
+
+		// arc destroy
+		if ((settings.getAction() == Action.DESTROY) && (null != settings.getAssetid()) && (null != settings.getWalletname())) {
+
+			// Make sure the wallet exists
+			AlgoLocalWallet wallet = AVMUtils.getWalletWithName(settings.getWalletname());
+			if (null == wallet) {
+				LOGGER.error("Unable to find wallet with name " + settings.getWalletname());
+				SystemUtils.halt();
+			}
+			LOGGER.info("Using wallet with address " + wallet.getAddress() + " to destroy asset");
+
+			String txhash = AVMUtils.destroyASA(connector, wallet, settings.getAssetid(), true);
+			LOGGER.info("Completed destroy action with txhash: " + txhash);
 		}
 
 		// arc3 mint
@@ -362,8 +537,8 @@ public class Start {
 				arc3params.setClawback(wallet.fetchAccount().getAddress());
 
 				// perform the mint
-				String txhash = AVMUtils.createARC3ASA(connector, wallet, arc3params);
-				LOGGER.info("txhash: " + txhash);
+				AVMCreateAssetResult result = AVMUtils.createARC3ASA(connector, wallet, arc3params);
+				LOGGER.info("result: " + result.toString());
 
 			}
 		}
@@ -487,6 +662,42 @@ public class Start {
 		Option arcstandardOption = new Option(null, "arcstandard", true, "ARC standard to use for minting: ARC3, ARC19 or ARC69");
 		options.addOption(arcstandardOption);
 
+		// manager
+		Option managerOption = new Option(null, "manager", true, "The new manager address to be set with RECONFIG action");
+		options.addOption(managerOption);
+
+		// reserve
+		Option reserveOption = new Option(null, "reserve", true, "The new reserve address to be set with RECONFIG action");
+		options.addOption(reserveOption);
+
+		// freeze
+		Option freezeOption = new Option(null, "freeze", true, "The new freeze address to be set with RECONFIG action");
+		options.addOption(freezeOption);
+
+		// clawback
+		Option clawbackOption = new Option(null, "clawback", true, "The new freeze address to be set with RECONFIG action");
+		options.addOption(clawbackOption);
+
+		// force_immutable
+		Option force_immutableOption = new Option(null, "force_immutable", false, "Makes the specified assetid immutable when used with the RECONFIG action");
+		options.addOption(force_immutableOption);
+
+		// clearmanager
+		Option clearmanagerOption = new Option(null, "clearmanager", false, "Makes the specified assetid manager address immutable when used with the RECONFIG action");
+		options.addOption(clearmanagerOption);
+
+		// clearreserve
+		Option clearreserveOption = new Option(null, "clearreserve", false, "Makes the specified assetid reserve address immutable when used with the RECONFIG action");
+		options.addOption(clearreserveOption);
+
+		// clearfreeze
+		Option clearfreezeOption = new Option(null, "clearfreeze", false, "Makes the specified assetid freeze address immutable when used with the RECONFIG action");
+		options.addOption(clearfreezeOption);
+
+		// clearclawback
+		Option clearclawbackOption = new Option(null, "clearclawback", false, "Makes the specified assetid clawback address immutable when used with the RECONFIG action");
+		options.addOption(clearclawbackOption);
+
 		HelpFormatter formatter = new HelpFormatter();
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
@@ -509,6 +720,7 @@ public class Start {
 				if (cmd.getOptionValue("action").equalsIgnoreCase("NETCONFIG")) settings.setAction(Action.NETCONFIG);
 				if (cmd.getOptionValue("action").equalsIgnoreCase("OPTIN")) settings.setAction(Action.OPTIN);
 				if (cmd.getOptionValue("action").equalsIgnoreCase("CONVERT")) settings.setAction(Action.CONVERT);
+				if (cmd.getOptionValue("action").equalsIgnoreCase("DESTROY")) settings.setAction(Action.DESTROY);
 			}
 
 			if (cmd.hasOption("arcstandard")) {
@@ -554,6 +766,17 @@ public class Start {
 			if (cmd.hasOption("metadata_cid")) settings.setMetadata_cid(cmd.getOptionValue("metadata_cid"));
 			if (cmd.hasOption("asset_name")) settings.setAsset_name(cmd.getOptionValue("asset_name"));
 			if (cmd.hasOption("unit_name")) settings.setUnit_name(cmd.getOptionValue("unit_name"));
+
+			if (cmd.hasOption("manager")) settings.setManager(cmd.getOptionValue("manager"));
+			if (cmd.hasOption("reserve")) settings.setReserve(cmd.getOptionValue("reserve"));
+			if (cmd.hasOption("freeze")) settings.setFreeze(cmd.getOptionValue("freeze"));
+			if (cmd.hasOption("clawback")) settings.setClawback(cmd.getOptionValue("clawback"));
+			if (cmd.hasOption("force_immutable")) settings.setForce_immutable(true);
+
+			if (cmd.hasOption("clearmanager")) settings.setClearmanager(true);
+			if (cmd.hasOption("clearreserve")) settings.setClearreserve(true);
+			if (cmd.hasOption("clearfreeze")) settings.setClearfreeze(true);
+			if (cmd.hasOption("clearclawback")) settings.setClearclawback(true);
 
 			settings.sanityCheck();
 			if (settings.isDebug()) settings.print();
