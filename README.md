@@ -611,13 +611,13 @@ Options:
    --unit_name			Unit name of asset to be minted (can be exluded if metadata has name properties)
    --manager			The new manager address to be set with RECONFIG action
    --reserve			The new reserve address to be set with RECONFIG action
-   --freeze				The new freeze address to be set with RECONFIG action
+   --freeze			The new freeze address to be set with RECONFIG action
    --clawback			The new clawback address to be set with RECONFIG action
-   --clearmanager		The new manager address to be set with RECONFIG action
-   --clearreserve		The new reserve address to be set with RECONFIG action
-   --clearfreeze		The new freeze address to be set with RECONFIG action
-   --clearclawback		The new clawback address to be set with RECONFIG action
-   --force_immutable	Force the specified ASA to be fully immutable
+   --clearmanager			The new manager address to be set with RECONFIG action
+   --clearreserve			The new reserve address to be set with RECONFIG action
+   --clearfreeze			The new freeze address to be set with RECONFIG action
+   --clearclawback			The new clawback address to be set with RECONFIG action
+   --force_immutable		Force the specified ASA to be fully immutable
    ```
 
 ### Next steps
