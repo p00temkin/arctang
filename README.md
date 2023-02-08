@@ -31,7 +31,7 @@ On Algorand an NFT is instead represented as an individual ASA (Algorand Standar
   - The url field points to the NFT digital asset file. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction and simple access to the mediafile url.
   - Suitable for mutable NFTs where the mediafile is locked, easily accessed, but the compact metadata associated with it changes over time.
  
-In common for all of these standards is that the four addresses of an ASA (manager, reservice, freeze and clawback) can be updated by the manager address unless it is set to "". 
+In common for all of these standards is that the four addresses of an ASA (manager, reserve, freeze and clawback) can be updated by the manager address unless it is set to "". 
 
 ### Supporting ARCs:
 
@@ -786,12 +786,13 @@ Options:
 - Include nr of pins on IPFS in ARC asset rating
 - Support mint+metadata update action for all arcs
 - Battletest across collections
+- Support CONVERT action by directly communicating with ERC721 contracts to extract entire collections. 
 
 ### Random thoughts
  
 - Since the ARC standards are new and allow for mutability it seems most creators enable this functionality. This is very different from Ethereum and overall tells the user 'this NFT isnt really yours'. If the NFT Manager wallet is compromised the entire collection can be destroyed with a single acfg command. Would likely be beneficial for the ecosystem to endorse immutability for top collections. Perhaps introduce a gamification aspect which transforms the NFT to an immutable state after some achievement. This would embrace the differences to Ethereum but still respect the ethos of immutable blockchain assets. 
 - On Algorand the NFT ARC standards seems to be lacking the concept of 'collection' or 'club', ie the 'smart contract clubhouse' when compared to Ethereum. Would be interesting to explore if this would benefit the Algorand NFT ecosystem. 
-- Another approach which might be possible to pursue is embracing dynamic NFTs completely, ie going the [RMRK](https://www.rmrk.app/) route or if something similar to [Diamond Contracts](https://eips.ethereum.org/EIPS/eip-2535) (used by Aavegotchi) can be implemented on Algorand. 
+- Another approach which might be possible to pursue is more complex dynamic NFTs, ie going the route of [RMRK](https://www.rmrk.app/) with EIP-6059 amd EIP-6220, or Aavegotchi with EIP-998 and [Diamond Contracts](https://eips.ethereum.org/EIPS/eip-2535). Not sure what can be supported by Algorand but the initial versions of RMRK seems to use techniques similar to ARC69. 
 
 ### Future projects
 
@@ -824,6 +825,11 @@ Ethereum influenced EIPs:
 - <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1155.md>
 - <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-777.md>
 - <https://docs.opensea.io/docs/metadata-standards>
+
+Related Ethereum EIPs:
+- <https://eips.ethereum.org/EIPS/eip-998>
+- <https://eips.ethereum.org/EIPS/eip-6059>
+- <https://eips.ethereum.org/EIPS/eip-6220>
 
 Misc:
 - <https://hex2algo.vercel.app>

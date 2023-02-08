@@ -176,9 +176,7 @@ public class Start {
 				String metajson = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
 				ARC69MetaData arcmetadata = JSONUtils.createARC69MetaData(metajson);
 
-				IPFSConnector ipfs_connector = new IPFSConnector();
-
-				ASAVerificationStatus vstatus = AVMUtils.verifyARC69Asset(ipfs_connector, arcasset, arcmetadata, metajson);
+				ASAVerificationStatus vstatus = AVMUtils.verifyARC69Asset(arcasset, arcmetadata, metajson);
 				System.out.println(vstatus.toString());
 			}
 		}
