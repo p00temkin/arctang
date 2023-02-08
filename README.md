@@ -6,12 +6,10 @@ Swiss army knife to query/validate/transfer/convert/mint NFTs for various ARC st
 | :--: |
 
 ### Quick introduction for EVM users
-On Ethereum an NFT is represented by a smart contract where the contract keeps track of its owners, burns etc. The smart contract represents the 'NFT collection' and all activity is handled by this contract. 
-Ownership basically represents being part of a club and ERC721 is the pure OG NFT contract standard. ERC1155 is a more recent cousin which supports semi-fungible tokens and adds additional features such as 
+On Ethereum an NFT is represented by a smart contract where the contract keeps track of its owners, burns etc. The smart contract represents the 'NFT collection' and all activity is handled by this contract. Ownership basically represents being part of a club and ERC721 is the pure OG NFT contract standard. ERC1155 is a more recent cousin which supports semi-fungible tokens and adds additional features such as 
 batch transfers and transaction security.
 
-On Algorand an NFT is instead represented as an individual ASA (Algorand Standard Asset). An ASA is not a smart contract but a separate first-class citizen on the Algorand blockchain. To be considered an NFT 
-the ASA needs to comply with one of the current Algorand NFT-related ARCs. An ARC is the equivalent of an ERC on Ethereum. 
+On Algorand an NFT is instead represented as an individual ASA (Algorand Standard Asset). An ASA is not a smart contract but a separate first-class citizen on the Algorand blockchain. To be considered an NFT the ASA needs to comply with one of the current Algorand NFT-related ARCs. An ARC is the equivalent of an ERC on Ethereum. 
 
 ### Algorand NFT ARCs
 
@@ -268,7 +266,7 @@ Note that the NFT metadata is fetched differently for each of these ARC standard
 
 ### Verify ASA content and metadata
 
-For ARC3 ASAs we can verify the integrity of the NFT by checking that the metadata JSON is intact and that the integrity checksum fields of the metadata are inteact (ie the actual linked mediafiles) . This can be achived with with VERIFY action which provides an ARC compliance summary along with overview of potential issues found:
+For ARC3 ASAs we can verify the integrity of the NFT by checking that the metadata JSON is intact and that the integrity checksum fields of the metadata are inteact (ie the actual linked mediafiles). This can be achived with with VERIFY action which provides an ARC compliance summary along with overview of potential issues found:
 
 - **ARC3 asset:**
    ```
@@ -344,7 +342,7 @@ In order to transfer, mint or reconfigure ASAs we need an Algorand account to wo
 	.. Generated wallet from mnemonic with name bob with address ..
    ```
 
-This creates a walletfile in your local .avm/wallets folder (with the walletname 'bob' in this case) which can be used for future actions which requires an on-chain action. If you dont specify the mnemonic argument a random wallet will be generated for you which you then need to fund somehow (transfer from other account or using a faucet). 
+This creates a walletfile in your local .avm/wallets folder (with the walletname 'bob' in this case) which can be used for future actions which requires an on-chain action. If you dont specify the mnemonic argument a random wallet will be generated for you which you then need to fund somehow (transfer from other account or use a faucet). 
 
 ### Opt-in to an ASA Asset
 
@@ -504,7 +502,7 @@ If we try with a more rich ERC-721 such as [Luchadores](https://luchadores.io) w
 
    ```
    
-Note that ARC19 does not have any specific requirements for the JSON metadata so there is no separate --to_arc19_folder option. 
+Note that ARC19 does not have any specific requirements for the JSON metadata content (only how to find it) so there is no separate --to_arc19_folder option. 
    
 ### Mint an ASA Asset
 
@@ -700,7 +698,7 @@ Note that for ARC69 the process is similar but you need to use --to_arc69_folder
 	 [+] Metadata name (MAYG #2596 Sygne Princess) related the ASA specified unit name (M_2596SP)
    ```
 
-As noted we end up with an ASA69 with a near perfect score. We could have manually fixed the score by replacing the https IPFS Pinata URL with a pure ipfs:// URL in the mint action above.  
+As noted we end up with an ARC69 with a near perfect score. We could have manually fixed the score by replacing the https IPFS Pinata URL with a pure ipfs:// URL in the mint action above.  
 
 ### Destroying an ASA Asset
 
@@ -712,8 +710,6 @@ As long as the manager address is still intact in the ASA, the entire NFT collec
    .. Using wallet with address PO.. to destroy asset
    .. Completed destroy action with txhash: F4UVVIDU4W..
    ```
-
-Destroying an ARC asset is done
 
 ### Prerequisites
 
@@ -730,7 +726,7 @@ Destroying an ARC asset is done
 
    ```
    mvn clean package
-   mv target/arctang-0.0.1-SNAPSHOT-jar-with-dependencies.jar arctang.jar
+   mv target/arctang-0.0.1-SNAPSHOT-jar-with-dependencies.jar ./arctang.jar
    ```
 
 ### Usage
@@ -743,7 +739,7 @@ Options:
 
    ```
    --chain				The Algorand chain: MAINNET, BETANET or TESTNET
-   --action			Action to perform: QUERY, VERIFY, TRANSFER, MINT, WALLETCONFIG, NETCONFIG, OPTIN, CONVERT, DESTROY
+   --action			Action to perform: QUERY, VERIFY, TRANSFER, MINT, WALLETCONFIG, NETCONFIG, OPTIN, CONVERT, DESTROY, RECONFIG
    --nodeurl			The Algorand custom network node URL
    --nodeport			The Algorand custom network node port
    --nodeauthtoken			The Algorand custom network node authtoken
@@ -788,13 +784,19 @@ Options:
 - Add support for ARC3 'extra_metadata'
 - Check nr of reconfigs for ARC69 as part of ARC asset rating
 - Include nr of pins on IPFS in ARC asset rating
-- Support mint/metadata update action for all arcs
+- Support mint+metadata update action for all arcs
 - Battletest across collections
 
-### Closing thoughts, future projects
+### Random thoughts
  
-- Since the ARC standards are new and allow for mutability it seems most creators enable this functionality. This is very different from Ethereum and overall tells the user 'this NFT isnt really yours'. If the NFT manager wallet is compromised the entire collection can be destroyed with a single acfg command. Would be interesting to change this creator mindset and endorse immutability for top collections. Perhaps introduce a gamification aspect which transforms the NFT to an immutable state after some achievement. This would embrace the differences to Ethereum but still respect the ethos of immutable blockchain assets. 
-- On Algorand the NFT ARC standards seems to be lacking the concept of 'collection' or 'club', ie the 'smart contract clubhouse' when compared to Ethereum. Would be interesting to explore various paths to enable the same vibe on Algorand. 
+- Since the ARC standards are new and allow for mutability it seems most creators enable this functionality. This is very different from Ethereum and overall tells the user 'this NFT isnt really yours'. If the NFT Manager wallet is compromised the entire collection can be destroyed with a single acfg command. Would likely be beneficial for the ecosystem to endorse immutability for top collections. Perhaps introduce a gamification aspect which transforms the NFT to an immutable state after some achievement. This would embrace the differences to Ethereum but still respect the ethos of immutable blockchain assets. 
+- On Algorand the NFT ARC standards seems to be lacking the concept of 'collection' or 'club', ie the 'smart contract clubhouse' when compared to Ethereum. Would be interesting to explore if this would benefit the Algorand NFT ecosystem. 
+- Another approach which might be possible to pursue is embracing dynamic NFTs completely, ie going the [RMRK](https://www.rmrk.app/) route or if something similar to [Diamond Contracts](https://eips.ethereum.org/EIPS/eip-2535) (used by Aavegotchi) can be implemented on Algorand. 
+
+### Future projects
+
+- Add support Algorand ARC NFT support to [ForestFISHD](https://github.com/p00temkin/forestfishd) (token-gated content access)
+- ARC NFT rating site/dapp?
 
 ### Additional useful options/resources
 
