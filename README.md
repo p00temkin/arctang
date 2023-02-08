@@ -1,6 +1,6 @@
 ## ARCTANG
 
-Swiss army knife to query/validate/transfer/convert/mint NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) (part of this project) for Algorand support. 
+Swiss army knife to query/validate/transfer/convert/mint/update NFTs for various ARC standards on the Algorand blockchain. Using the official Java SDK via [ForestFISH](https://github.com/p00temkin/forestfish) (part of this project) for Algorand support. 
 
 | ![alt text](https://github.com/p00temkin/arctang/blob/master/img/arctang_r7.png?raw=true) |
 | :--: |
@@ -700,6 +700,29 @@ Note that for ARC69 the process is similar but you need to use --to_arc69_folder
 
 As noted we end up with an ARC69 with a near perfect score. We could have manually fixed the score by replacing the https IPFS Pinata URL with a pure ipfs:// URL in the mint action above.  
 
+### Updating the Metadata JSON
+
+In the previous example we could leave the Manager address intact and create a "metadata timeline". To do this we mint the asset just like before but now ship new versions of the metadata with the METADATAUPDATE action: 
+
+   ```
+   	java -jar ./arctang.jar --walletname may --chain TESTNET --action MINT --arcstandard ARC69 --mediadata_url https://mayg.mypinata.cloud/ipfs/QmQFSAQc99frsfAncQihDRSm4N1U1RGcX1F59Uin6AZqXW/2596.png --metadata_filepath ./mayg_arc69/2596.json
+   .. result: txhash=UB27LTOWOWOTI6DYJ7AC6G7PGL53KVDKLCFOU3OKYZF35MWY3QFA assetid=157743663 confirmed=true
+   
+   java -jar ./arctang.jar --walletname may --chain TESTNET --action METADATAUPDATE --assetid 157743663 --metadata_filepath ./mayg_arc69/2596_2.json
+   .. Using wallet with address 4SUROY77T4U5ZBNF2IOBWUZBOWPPFGZRWO26NZZXNIUMWAUETDUQ3GKZ5Q for metadataupdate
+   .. METADATAUPDATE txhash: QJONSTTITTIF2AMXHL6PF2VZHTPXAGWGWZULKCMIKNJV5TX37HYA
+   
+   java -jar ./arctang.jar --walletname may --chain TESTNET --action METADATAUPDATE --assetid 157743663 --metadata_filepath ./mayg_arc69/2596_3.json
+   .. Using wallet with address 4SUROY77T4U5ZBNF2IOBWUZBOWPPFGZRWO26NZZXNIUMWAUETDUQ3GKZ5Q for metadataupdate
+   .. METADATAUPDATE txhash: FITL3BQ6C37NKDHANYHLSRTISRZM6CX6BA7KQTH27F6XMUSMHYIQ
+   
+   java -jar ./arctang.jar --walletname may --chain TESTNET --action METADATAUPDATE --assetid 157743663 --metadata_filepath ./mayg_arc69/2596_4.json
+   .. Using wallet with address 4SUROY77T4U5ZBNF2IOBWUZBOWPPFGZRWO26NZZXNIUMWAUETDUQ3GKZ5Q for metadataupdate
+   .. METADATAUPDATE txhash: PRXGSUS5BAIHHS3ZVQFE3EDSHQM3GOVTN5EWX4Z4HIXTTUDD5ERA
+   ```
+
+Only difference in the above metadata versions is the added "sequence" property which changes with every update. A gamification usercase for this would be to boost various scores/traits in the metadata file of the NFT until the game season ends. When the season ends, all active NFTs are ranked and made immutable (plenty of game setups/variants to play around with). 
+
 ### Destroying an ASA Asset
 
 As long as the manager address is still intact in the ASA, the entire NFT collection can be destroyed by sending a reconfigure transaction to the assetid with none of the 4 mutable addresses set. With arctang you can do this with the DESTROY action as shown below: 
@@ -739,7 +762,7 @@ Options:
 
    ```
    --chain				The Algorand chain: MAINNET, BETANET or TESTNET
-   --action			Action to perform: QUERY, VERIFY, TRANSFER, MINT, WALLETCONFIG, NETCONFIG, OPTIN, CONVERT, DESTROY, RECONFIG
+   --action			Action to perform: QUERY, VERIFY, TRANSFER, MINT, WALLETCONFIG, NETCONFIG, OPTIN, CONVERT, DESTROY, RECONFIG, METADATAUPDATE
    --nodeurl			The Algorand custom network node URL
    --nodeport			The Algorand custom network node port
    --nodeauthtoken			The Algorand custom network node authtoken

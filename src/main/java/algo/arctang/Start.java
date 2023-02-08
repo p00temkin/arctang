@@ -442,6 +442,51 @@ public class Start {
 			String txhash = AVMUtils.destroyASA(connector, wallet, settings.getAssetid(), true);
 			LOGGER.info("Completed destroy action with txhash: " + txhash);
 		}
+		
+		// arc metadataupdate
+		if ((settings.getAction() == Action.METADATAUPDATE) && (null != settings.getAssetid()) && (null != settings.getWalletname())) {
+			
+			// Make sure the wallet exists
+			AlgoLocalWallet wallet = AVMUtils.getWalletWithName(settings.getWalletname());
+			if (null == wallet) {
+				LOGGER.error("Unable to find wallet with name " + settings.getWalletname());
+				SystemUtils.halt();
+			}
+			LOGGER.info("Using wallet with address " + wallet.getAddress() + " for metadataupdate");
+			
+			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
+
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json);
+			LOGGER.info("Standard determined to be: " + standard);
+			if (standard == AVMNFTStandard.ARC69) {
+
+				if (null == settings.getMetadata_filepath()) {
+					LOGGER.error("For ARC69 mints you need to specify --metadata_filepath");
+					SystemUtils.halt();
+				}
+				
+				ARC69Asset arc69asset = AVMUtils.createARC69Asset(asa_json);
+				AVMASAMutables mutables = new AVMASAMutables(arc69asset.getManager(), arc69asset.getReserve(), arc69asset.getFreeze(), arc69asset.getClawback());
+				
+				// Make sure metadata exists and aligns with specified ARC standard
+				String metadata_json = FilesUtils.readAllFromFileWithPath(settings.getMetadata_filepath());
+				System.out.println(JSONUtils.prettyPrint(metadata_json));
+				ARC69MetaData arc69_metadata = JSONUtils.createARC69MetaData(metadata_json);
+				if (null == arc69_metadata.getStandard()) {
+					LOGGER.error("For ARC69 the metadata has to include a standard key");
+					SystemUtils.halt();
+				}
+				if (!"arc69".equals(arc69_metadata.getStandard())) {
+					LOGGER.error("For ARC69 the metadata standard key must be 'arc69'");
+					SystemUtils.halt();
+				}
+				
+				// perform the METADATAUPDATE action
+				String txhash = AVMUtils.reconfigureARC69ASAWithNote(connector, wallet, settings.getAssetid(), mutables, true, metadata_json);
+				LOGGER.info("METADATAUPDATE txhash: " + txhash);
+			}
+			
+		}
 
 		// arc mint
 		if ((settings.getAction() == Action.MINT) && (null != settings.getArcstandard()) && (null != settings.getWalletname())) {
@@ -828,6 +873,7 @@ public class Start {
 				if (cmd.getOptionValue("action").equalsIgnoreCase("OPTIN")) settings.setAction(Action.OPTIN);
 				if (cmd.getOptionValue("action").equalsIgnoreCase("CONVERT")) settings.setAction(Action.CONVERT);
 				if (cmd.getOptionValue("action").equalsIgnoreCase("DESTROY")) settings.setAction(Action.DESTROY);
+				if (cmd.getOptionValue("action").equalsIgnoreCase("METADATAUPDATE")) settings.setAction(Action.METADATAUPDATE);
 			}
 
 			if (cmd.hasOption("arcstandard")) {

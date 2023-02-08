@@ -167,6 +167,7 @@ public class Settings {
 				(this.getAction() == Action.NETCONFIG) ||
 				(this.getAction() == Action.OPTIN) ||
 				(this.getAction() == Action.DESTROY) ||
+				(this.getAction() == Action.METADATAUPDATE) ||
 				false) {
 
 			// require chain
