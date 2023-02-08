@@ -482,7 +482,7 @@ public class Start {
 				}
 				
 				// perform the METADATAUPDATE action
-				String txhash = AVMUtils.reconfigureARC69ASAWithNote(connector, wallet, settings.getAssetid(), mutables, true, metadata_json);
+				String txhash = AVMUtils.reconfigureARC69ASAWithNote(connector, wallet, settings.getAssetid(), mutables, true, JSONUtils.compactPrint(metadata_json));
 				LOGGER.info("METADATAUPDATE txhash: " + txhash);
 			}
 			
