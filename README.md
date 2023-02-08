@@ -705,7 +705,7 @@ As noted we end up with an ARC69 with a near perfect score. We could have manual
 In the previous example we could leave the Manager address intact and create a "metadata timeline". To do this we mint the asset just like before but now ship new versions of the metadata with the METADATAUPDATE action: 
 
    ```
-   	java -jar ./arctang.jar --walletname may --chain TESTNET --action MINT --arcstandard ARC69 --mediadata_url https://mayg.mypinata.cloud/ipfs/QmQFSAQc99frsfAncQihDRSm4N1U1RGcX1F59Uin6AZqXW/2596.png --metadata_filepath ./mayg_arc69/2596.json
+   java -jar ./arctang.jar --walletname may --chain TESTNET --action MINT --arcstandard ARC69 --mediadata_url https://mayg.mypinata.cloud/ipfs/QmQFSAQc99frsfAncQihDRSm4N1U1RGcX1F59Uin6AZqXW/2596.png --metadata_filepath ./mayg_arc69/2596.json
    .. result: txhash=UB27LTOWOWOTI6DYJ7AC6G7PGL53KVDKLCFOU3OKYZF35MWY3QFA assetid=157743663 confirmed=true
    
    java -jar ./arctang.jar --walletname may --chain TESTNET --action METADATAUPDATE --assetid 157743663 --metadata_filepath ./mayg_arc69/2596_2.json
@@ -805,9 +805,8 @@ Options:
 - Add more granular feature flags and control
 - Handle IPFS uploads during ARC minting
 - Add support for ARC3 'extra_metadata'
-- Check nr of reconfigs for ARC69 as part of ARC asset rating
+- Extend ARC rating system with two different scores (mutable/immutable)
 - Include nr of pins on IPFS in ARC asset rating
-- Support mint+metadata update action for all arcs
 - Battletest across collections
 - Support CONVERT action by directly communicating with ERC721 contracts to extract entire collections. 
 
@@ -815,7 +814,7 @@ Options:
  
 - Since the ARC standards are new and allow for mutability it seems most creators enable this functionality. This is very different from Ethereum and overall tells the user 'this NFT isnt really yours'. If the NFT Manager wallet is compromised the entire collection can be destroyed with a single acfg command. Would likely be beneficial for the ecosystem to endorse immutability for top collections. Perhaps introduce a gamification aspect which transforms the NFT to an immutable state after some achievement. This would embrace the differences to Ethereum but still respect the ethos of immutable blockchain assets. 
 - On Algorand the NFT ARC standards seems to be lacking the concept of 'collection' or 'club', ie the 'smart contract clubhouse' when compared to Ethereum. Would be interesting to explore if this would benefit the Algorand NFT ecosystem. 
-- Another approach which might be possible to pursue is more complex dynamic NFTs, ie going the route of [RMRK](https://www.rmrk.app/) with EIP-6059 amd EIP-6220, or Aavegotchi with EIP-998 and [Diamond Contracts](https://eips.ethereum.org/EIPS/eip-2535). Not sure what can be supported by Algorand but the initial versions of RMRK seems to use techniques similar to ARC69. 
+- Another approach which might be possible to pursue is more complex dynamic NFTs, ie going the route of [RMRK](https://www.rmrk.app/) with EIP-6059 amd EIP-6220, or Aavegotchi with EIP-998. Not sure what can be supported by Algorand but the initial versions of RMRK seems to use techniques similar to ARC69. 
 
 ### Future projects
 
@@ -860,6 +859,8 @@ Misc:
 - <https://stackoverflow.com/questions/74052032/algorand-arc-19-and-arc-69-what-exaclty-is-the-difference>
 - <https://www.techdreams.org/crypto-currency/algorand-arc3-and-arc69-standard-nfts-overview/12382-20220118>
 - <https://gitcoin.co/hackathon/greenhouse3>
+- <https://www.rmrk.app/>
+- <https://www.aavegotchi.com/>
 
 ### BTW, is arctang really needed?
 
