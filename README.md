@@ -657,7 +657,7 @@ The NFT looks ok but is left at a score of 6/10 since all the 4 mutable addresse
    
 The asset can then be found on https://testnet.algoexplorer.io/asset/157597369
 
-Note that for ARC69 the process is similar but you need to use --to_arc69_folder, --metadata_filepath and --mediadata_url instead while minting (and the IPFS CID should point to the actual mediafile, not the metadata JSON). Example below for re-minting a [MAYG](https://mayg.io/) NFT on Algorand:
+Note that for ARC69 the process is similar but you need to use --to_arc69_folder, --metadata_filepath and --mediadata_url instead while minting (and the mediadata_url should point to the actual mediafile, not the metadata JSON). Example below for re-minting a [MAYG](https://mayg.io/) NFT on Algorand:
 
 | ![alt text](https://github.com/p00temkin/arctang/blob/master/img/mayg_2596.png?raw=true) |
 | :--: |
@@ -842,16 +842,16 @@ Algorand NFT galleries:
 - <https://www.nftexplorer.app>
 - <https://www.randgallery.com/algo-collection>
 
-Ethereum influenced EIPs:
+Ethereum EIPs directly referenced by ARC standards:
 - <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md>
 - <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1155.md>
-- <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-777.md>
 - <https://docs.opensea.io/docs/metadata-standards>
 
 Related Ethereum EIPs:
 - <https://eips.ethereum.org/EIPS/eip-998>
 - <https://eips.ethereum.org/EIPS/eip-6059>
 - <https://eips.ethereum.org/EIPS/eip-6220>
+- <https://eips.ethereum.org/EIPS/eip-777>
 
 Misc:
 - <https://hex2algo.vercel.app>
