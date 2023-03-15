@@ -1,7 +1,5 @@
 package algo.arctang;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.File;
 import java.util.ArrayList;
 
@@ -71,6 +69,7 @@ public class Settings {
 	private boolean clearreserve = false;
 	private boolean clearfreeze = false;
 	private boolean clearclawback = false;
+	private String address;
 	
 	private boolean debug = false;
 	
@@ -158,7 +157,7 @@ public class Settings {
 		}
 		
 		if (false ||
-				// all actions which require a tx
+				// all actions which require a network connection
 				(this.getAction() == Action.QUERY) ||
 				(this.getAction() == Action.MINT) ||
 				(this.getAction() == Action.RECONFIG) ||
@@ -168,6 +167,7 @@ public class Settings {
 				(this.getAction() == Action.OPTIN) ||
 				(this.getAction() == Action.DESTROY) ||
 				(this.getAction() == Action.METADATAUPDATE) ||
+				(this.getAction() == Action.LIST) ||
 				false) {
 
 			// require chain
@@ -209,7 +209,7 @@ public class Settings {
 				
 				// Save to local disk if present
 				if (this.getAction() == Action.NETCONFIG) {
-					String json = JSONUtils.createJSONFromAVMChainInfo(chainInfo);
+					String json = JSONUtils.createJSONFromPOJO(chainInfo);
 					FilesUtils.createFolderUnlessExists(".avm");
 					FilesUtils.createFolderUnlessExists(".avm/networks");
 					File f = new File(".avm/networks/" + chain.toString());
@@ -231,7 +231,7 @@ public class Settings {
 				File f = new File(".avm/networks/" + chain.toString());
 				if (f.exists()) {
 					String json = FilesUtils.readStringFromFile(".avm/networks/" + chain.toString());
-					AVMChainInfo chainInfo = JSONUtils.createAVMChainInfo(json);
+					AVMChainInfo chainInfo = JSONUtils.createPOJOFromJSON(json, AVMChainInfo.class);
 					this.chainInfo = chainInfo;
 				} else {
 					LOGGER.error("Need chainInfo for " + this.getChain() + ", please consider using --confignetwork since no public nodes are available");
@@ -245,7 +245,6 @@ public class Settings {
 			LOGGER.error("Need to provide --assetid when using QUERY action");
 			SystemUtils.halt();
 		}
-		
 
 		if ((this.getAction() == Action.WALLETCONFIG)) {
 			
@@ -270,6 +269,21 @@ public class Settings {
 			if (null == this.getWalletname()) {
 				LOGGER.error("Need to provide --walletname when using the OPTIN action");
 				SystemUtils.halt();
+			}
+		}
+		
+		if ((this.getAction() == Action.LIST)) {
+			if ((null == this.getWalletname()) && (null == this.getAddress())) {
+				LOGGER.error("Need to provide --walletname or --address when using the LIST action");
+				SystemUtils.halt();
+			}
+			if ((null != this.getWalletname()) && (null != this.getAddress())) {
+				LOGGER.error("Please dont provide --walletname AND --address when using the LIST action");
+				SystemUtils.halt();
+			}
+			// check for valid Algorand address
+			if (null != this.getAddress()) {
+				AVMUtils.createAddressFromSTR(this.getAddress());
 			}
 		}
 		
@@ -540,6 +554,14 @@ public class Settings {
 
 	public void setMetadata_filepath(String metadata_filepath) {
 		this.metadata_filepath = metadata_filepath;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 }

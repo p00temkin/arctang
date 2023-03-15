@@ -734,6 +734,19 @@ As long as the manager address is still intact in the ASA, the entire NFT collec
    .. Completed destroy action with txhash: F4UVVIDU4W..
    ```
 
+### What ARCS are in your wallet?
+
+To get a console print of ARC assets you can use the --listarcs option, either with the --walletname (for your arcs) or --address option (for any arcs)
+
+   ```
+   java -jar ./arctang.jar --chain TESTNET --action LIST --walletname bob
+   java -jar ./arctang.jar --chain MAINNET --action LIST --address S3S5AHMEVU5YXIE56DS..
+   
+   .. <table of ARC ownership>
+   ARC ASAs owned by S3S5AHMEVU5YXIE5...
+   amount=1/8000                  unit-name=ALCH0046       standard=ARC69     url=https://gatew...
+   ```
+
 ### Prerequisites
 
 [Java 17+, Maven 3.x]
@@ -798,6 +811,7 @@ Options:
    --clearfreeze			The new freeze address to be set with RECONFIG action
    --clearclawback			The new clawback address to be set with RECONFIG action
    --force_immutable		Force the specified ASA to be fully immutable
+   --address				Can be used with LIST action to specify wallet you do not own
    ```
 
 ### Next steps

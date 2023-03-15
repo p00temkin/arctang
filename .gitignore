@@ -1,7 +1,6 @@
 config
 target
 bin
-*wallet
 *.sh
 *.jar
 *.pl
