@@ -736,7 +736,7 @@ As long as the manager address is still intact in the ASA, the entire NFT collec
 
 ### What ARCS are in your wallet?
 
-To get a console print of ARC assets you can use the --listarcs option, either with the --walletname (for your arcs) or --address option (for any arcs)
+To get a console print of ARC assets you can use the LIST action, either with the --walletname (for your arcs) or --address option (for any arcs)
 
    ```
    java -jar ./arctang.jar --chain TESTNET --action LIST --walletname bob
@@ -811,7 +811,7 @@ Options:
    --clearfreeze			The new freeze address to be set with RECONFIG action
    --clearclawback			The new clawback address to be set with RECONFIG action
    --force_immutable		Force the specified ASA to be fully immutable
-   --address				Can be used with LIST action to specify wallet you do not own
+   --address			Can be used with LIST action to specify wallet you do not own
    ```
 
 ### Next steps
