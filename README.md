@@ -879,3 +879,15 @@ Misc:
 ### BTW, is arctang really needed?
 
 At the moment probably not. It was built with the intention to learn and be useful to others. The Algorand Java SDK pulls all the heavy lifting in this project and its rare to see a mature Java blockchain library. Development of this tool and improved Algorand support in [forestFISH](https://github.com/p00temkin/forestfish) will continue after this Hackathon.
+
+### Support/Donate
+
+To support this project directly:
+
+   ```
+   Ethereum/EVM: forestfish.x / 0x207d907768Df538F32f0F642a281416657692743
+   Algorand: forestfish.x / 3LW6KZ5WZ22KAK4KV2G73H4HL2XBD3PD3Z5ZOSKFWGRWZDB5DTDCXE6NYU
+   ```
+
+Or please consider donating to EFF:
+[Electronic Frontier Foundation](https://supporters.eff.org/donate)
