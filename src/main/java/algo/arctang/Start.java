@@ -84,7 +84,7 @@ public class Start {
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isParsed()) {
 			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(json);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(json, connector);
 			if (standard == AVMNFTStandard.ARC3) {
 				ARC3Asset arcasset = AVMUtils.getARC3Info(connector, settings.getAssetid());
 				System.out.println(arcasset.toString());
@@ -109,7 +109,7 @@ public class Start {
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isMetadata()) {
 			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
 			if (standard == AVMNFTStandard.ARC3) {
 				ARC3Asset arcasset = AVMUtils.createARC3Asset(asa_json);
 
@@ -146,7 +146,7 @@ public class Start {
 		if ((settings.getAction() == Action.VERIFY) && (null != settings.getAssetid())) {
 			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
 			LOGGER.info("Standard determined to be: " + standard);
 			if (standard == AVMNFTStandard.ARC3) {
 				ARC3Asset arc3asset = AVMUtils.createARC3Asset(asa_json);
@@ -193,7 +193,7 @@ public class Start {
 
 			// First we make sure the assetid represents an ARC
 			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
 			if (false ||
 					(standard == AVMNFTStandard.ARC3) ||
 					(standard == AVMNFTStandard.ARC19) ||
@@ -276,7 +276,7 @@ public class Start {
 
 		// arc reconfig
 		if ((settings.getAction() == Action.RECONFIG) && (null != settings.getWalletname()) && (null != settings.getAssetid())) {
-			
+
 			// Make sure the wallet exists
 			AlgoLocalWallet wallet = AVMUtils.getWalletWithName(settings.getWalletname());
 			if (null == wallet) {
@@ -286,7 +286,7 @@ public class Start {
 			LOGGER.info("Using wallet with address " + wallet.getAddress() + " for reconfig");
 
 			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
 
 			AVMASAMutables mutables = null;
 			if (standard == AVMNFTStandard.ARC3) {
@@ -449,10 +449,10 @@ public class Start {
 			String txhash = AVMUtils.destroyASA(connector, wallet, settings.getAssetid(), true);
 			LOGGER.info("Completed destroy action with txhash: " + txhash);
 		}
-		
+
 		// arc metadataupdate
 		if ((settings.getAction() == Action.METADATAUPDATE) && (null != settings.getAssetid()) && (null != settings.getWalletname())) {
-			
+
 			// Make sure the wallet exists
 			AlgoLocalWallet wallet = AVMUtils.getWalletWithName(settings.getWalletname());
 			if (null == wallet) {
@@ -460,10 +460,10 @@ public class Start {
 				SystemUtils.halt();
 			}
 			LOGGER.info("Using wallet with address " + wallet.getAddress() + " for metadataupdate");
-			
+
 			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
 			LOGGER.info("Standard determined to be: " + standard);
 			if (standard == AVMNFTStandard.ARC69) {
 
@@ -471,10 +471,10 @@ public class Start {
 					LOGGER.error("For ARC69 mints you need to specify --metadata_filepath");
 					SystemUtils.halt();
 				}
-				
+
 				ARC69Asset arc69asset = AVMUtils.createARC69Asset(asa_json);
 				AVMASAMutables mutables = new AVMASAMutables(arc69asset.getManager(), arc69asset.getReserve(), arc69asset.getFreeze(), arc69asset.getClawback());
-				
+
 				// Make sure metadata exists and aligns with specified ARC standard
 				String metajson = FilesUtils.readAllFromFileWithPath(settings.getMetadata_filepath());
 				System.out.println(JSONUtils.prettyPrint(metajson));
@@ -487,12 +487,12 @@ public class Start {
 					LOGGER.error("For ARC69 the metadata standard key must be 'arc69'");
 					SystemUtils.halt();
 				}
-				
+
 				// perform the METADATAUPDATE action
 				String txhash = AVMUtils.reconfigureARC69ASAWithNote(connector, wallet, settings.getAssetid(), mutables, true, JSONUtils.compactPrint(metajson));
 				LOGGER.info("METADATAUPDATE txhash: " + txhash);
 			}
-			
+
 		}
 
 		// arc mint
@@ -537,7 +537,7 @@ public class Start {
 					LOGGER.error("ARC standard mismatch, ARC standard identified as " + identified_standard + " but specified as " + settings.getArcstandard());
 					SystemUtils.halt();
 				}
-				
+
 				if (null == settings.getMetadata_cid()) {
 					LOGGER.error("For ARC3 mints you need to specify --metadata_cid");
 					SystemUtils.halt();
@@ -604,17 +604,17 @@ public class Start {
 
 			// arc69 mint
 			if (settings.getArcstandard() == AVMNFTStandard.ARC69) {
-				
+
 				if (null == settings.getMediadata_url()) {
 					LOGGER.error("For ARC69 mints you need to specify --mediadata_url");
 					SystemUtils.halt();
 				}
-				
+
 				if (null == settings.getMetadata_filepath()) {
 					LOGGER.error("For ARC69 mints you need to specify --metadata_filepath");
 					SystemUtils.halt();
 				}
-				
+
 				// Make sure metadata exists and aligns with specified ARC standard
 				String metajson = FilesUtils.readAllFromFileWithPath(settings.getMetadata_filepath());
 				System.out.println(JSONUtils.prettyPrint(metajson));
@@ -629,7 +629,7 @@ public class Start {
 					LOGGER.error("ARC standard mismatch, ARC standard identified as " + identified_standard + " but specified as " + settings.getArcstandard());
 					SystemUtils.halt();
 				}
-				
+
 				ARC69MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69MetaData.class);
 				if (null == arcmetadata.getName()) {
 					if (null == settings.getAsset_name()) {
@@ -667,7 +667,7 @@ public class Start {
 				ARC69Asset arc69params = new ARC69Asset();
 				arc69params.setUnitName(unitName);
 				arc69params.setAssetName(assetName);
-				
+
 				String fragment = "";
 				String url_mimetype = NFTUtils.determine_mimetype_from_ext(settings.getMediadata_url());
 				if (null != url_mimetype) {
@@ -677,7 +677,7 @@ public class Start {
 					LOGGER.error("Unsure what fragment to set for this assetURL: " + settings.getMediadata_url());
 					SystemUtils.halt();
 				}
-				
+
 				arc69params.setAssetURL(settings.getMediadata_url() + fragment);
 				arc69params.setTotalNrUnits(BigInteger.ONE);
 				arc69params.setDecimals(0);
@@ -692,9 +692,9 @@ public class Start {
 				AVMCreateAssetResult result = AVMUtils.createARC69ASA(connector, wallet, arc69params, JSONUtils.compactPrint(metajson));
 				LOGGER.info("result: " + result.toString());
 			}
-			
+
 		}
-		
+
 		// arc list
 		if ((settings.getAction() == Action.LIST) && (null != settings.getWalletname()) || (null != settings.getAddress())) {
 			String address = null;
@@ -708,14 +708,18 @@ public class Start {
 				address = wallet.getAddress();
 			}
 			if (null != settings.getAddress()) address = settings.getAddress();
-			
+
 			System.out.println("ARC ASAs owned by " + address + ":");
 			List<AssetHolding> asa_holdings = AVMUtils.getASAOwnershipInfoForAccount(connector, AVMUtils.createAddressFromSTR(address));
 			for (AssetHolding asa: asa_holdings) {
-				String json = AVMUtils.getASARawJSONResponse(connector, asa.assetId);
-				AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(json);
-				ASAContentOnchainReply reply = AVMUtils.getASAJSON(json);
-				if ((!asa.amount.equals(BigInteger.ZERO)) && (standard != AVMNFTStandard.UNKNOWN)) System.out.println(AVMUtils.printASAAssetOwnership(asa.amount, reply, standard));
+				if (AVMUtils.checkIfASAExists(connector, asa.assetId)) {
+					String json = AVMUtils.getASARawJSONResponse(connector, asa.assetId);
+					AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(json, connector);
+					ASAContentOnchainReply reply = AVMUtils.getASAJSON(json);
+					if ((!asa.amount.equals(BigInteger.ZERO)) && (standard != AVMNFTStandard.UNKNOWN)) System.out.println(AVMUtils.printASAAssetOwnership(asa.amount, reply, standard));
+				} else {
+					LOGGER.warn("Asset no longer exists! assetID: " + asa.assetId);
+				}
 			}
 		}
 	}
@@ -833,7 +837,7 @@ public class Start {
 		// metadata_filepath
 		Option metadata_filepathption = new Option(null, "metadata_filepath", true, "Filepath to the ARC69 metadata to be minted");
 		options.addOption(metadata_filepathption);
-		
+
 		// asset_name
 		Option asset_nameOption = new Option(null, "asset_name", true, "Name of asset to be minted (can be excluded if metadata has name properties)");
 		options.addOption(asset_nameOption);
@@ -881,7 +885,7 @@ public class Start {
 		// clearclawback
 		Option clearclawbackOption = new Option(null, "clearclawback", false, "Makes the specified assetid clawback address immutable when used with the RECONFIG action");
 		options.addOption(clearclawbackOption);
-		
+
 		// address
 		Option addressOption = new Option(null, "address", true, "Can be used with LIST action to specify a wallet you do not own");
 		options.addOption(addressOption);
@@ -969,7 +973,7 @@ public class Start {
 			if (cmd.hasOption("clearreserve")) settings.setClearreserve(true);
 			if (cmd.hasOption("clearfreeze")) settings.setClearfreeze(true);
 			if (cmd.hasOption("clearclawback")) settings.setClearclawback(true);
-			
+
 			if (cmd.hasOption("address")) settings.setAddress(cmd.getOptionValue("address"));
 
 			settings.sanityCheck();
