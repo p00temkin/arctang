@@ -734,7 +734,7 @@ public class Start {
 		options.addOption(chainOption);
 
 		// action
-		Option actionOption = new Option(null, "action", true, "Action to perform");
+		Option actionOption = new Option(null, "action", true, "Action to perform (QUERY, VERIFY, TRANSFER, MINT, WALLETCONFIG, NETCONFIG, OPTIN, CONVERT, DESTROY, RECONFIG, METADATAUPDATE)");
 		actionOption.setRequired(true);
 		options.addOption(actionOption);
 

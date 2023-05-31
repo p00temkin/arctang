@@ -815,6 +815,7 @@ Options:
    ```
 
 ### Next steps
+- Add support for ASAs which combine ARC69 and ARC19 (https://algoexplorer.io/asset/805169021)
 - Code cleanup and unit tests
 - Add more granular feature flags and control
 - Handle IPFS uploads during ARC minting
@@ -850,6 +851,7 @@ Algorand documentation:
 - <https://developer.algorand.org/docs/rest-apis/indexer/#assetparams>
 
 Algorand NFT galleries:
+- <https://algoxnft.com/>
 - <https://algogems.io>
 - <https://zestbloom.com>
 - <https://dartroom.xyz>
