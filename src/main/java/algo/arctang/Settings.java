@@ -45,6 +45,7 @@ public class Settings {
 	private boolean parsed = false;
 	private boolean probe_arcstandard = false;
 	private boolean metadata = false;
+	private boolean imageurl = false;
 	
 	private String walletname;
 	private String mnemonic;
@@ -562,6 +563,14 @@ public class Settings {
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+
+	public boolean isImageurl() {
+		return imageurl;
+	}
+
+	public void setImageurl(boolean imageurl) {
+		this.imageurl = imageurl;
 	}
 
 }

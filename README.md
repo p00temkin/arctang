@@ -329,6 +329,45 @@ The concept of string similarity in the ARC standard is handled by thresholds us
 	 [#4] No unit name value specified in the ASA
    ```
 
+### Query for ASA image url
+
+A common usercase is to quickly display the image data of an NFT, which is supported using the --imageurl QUERY option:
+
+- **ARC3 asset:** (fetches image url from metadata 'image' key)
+   ```
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 387411719 --imageurl
+   
+   .. Updating list of active IPFS gateway URLs ..
+   .. Nr of active IPFS gateways: 15
+   .. Attempting to fetch ipfs://bafkreibvnaigebcrjwabx3u5xqyjbykaw64wtve6myv4yuarux64m3lvmm
+   ipfs://bafkreibsgazs6waapitr4rvwsd75z5jgcxryiqacllrexszaoha2ph6voq
+   ```
+   
+- **ARC19 asset**: (fetches image url from metadata 'image' key)
+   ```
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --imageurl
+   
+   .. Resolved cid from ARC19 template to: bafkreihxpwumraqrlafdxldjitba7gkvwh2vaos4z6uscbodopqnee6gpa
+   .. Updating list of active IPFS gateway URLs ..
+   .. Nr of active IPFS gateways: 14
+   .. Attempting to fetch ipfs://bafkreihxpwumraqrlafdxldjitba7gkvwh2vaos4z6uscbodopqnee6gpa
+   ipfs://bafybeidhlz7iznf5rpxwj5xfukppvkizxf4yp3cnpipjcmvbjkg7rwwwau
+   ```
+   
+- **ARC69 asset**: (fetches image url from the on-chain 'url' key)
+   ```
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 490139078 --imageurl
+   https://gateway.pinata.cloud/ipfs/QmVxZFeLHtbrdtFabb46ToSvegpKyva1jzTkR61a8uM7qT
+   ```
+
+- **ARC69 asset with ARC19 style url**: (fetches image url from the on-chain 'url' key, resolves using reserve address)
+   ```
+   java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 805169021 --imageurl
+   ipfs://QmXzA1ktmaVKiEj3FWdstH7G8L5h1TXxoDSv7a3AWX3pyx
+   ```
+   
+The last example showcases a ARC69 ASA which uses ARC19 to dynamically update the image url using the reserve address.  
+
 ### Creating a wallet
 
 In order to transfer, mint or reconfigure ASAs we need an Algorand account to work from. We can create a named wallet using the WALLETCONFIG action
@@ -790,6 +829,7 @@ Options:
    --probe_arcstandard		Estimates ARC standard of assetid
    --debug				Debug mode
    --metadata			Grab the JSON metadata of ARC NFT with specified assetid
+   --imageurl			Grab the image URL of the of ARC NFT with specified assetid
    --walletname			Wallet name to use for specified action
    --mnemonic			Mnemonic to use for creating an Algorand account. Use with --walletname
    --to				Target account address for asset TRANSFER action
@@ -815,7 +855,6 @@ Options:
    ```
 
 ### Next steps
-- Add support for ASAs which combine ARC69 and ARC19 (https://algoexplorer.io/asset/805169021)
 - Code cleanup and unit tests
 - Add more granular feature flags and control
 - Handle IPFS uploads during ARC minting

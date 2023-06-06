@@ -29,7 +29,7 @@ import crypto.forestfish.objects.avm.model.nft.ARC3Asset;
 import crypto.forestfish.objects.avm.model.nft.ARC69Asset;
 import crypto.forestfish.objects.avm.model.nft.ASAVerificationStatus;
 import crypto.forestfish.objects.avm.model.nft.metadata.ARC3MetaData;
-import crypto.forestfish.objects.avm.model.nft.metadata.ARC69MetaData;
+import crypto.forestfish.objects.avm.model.nft.metadata.ARC69ARC19MetaData;
 import crypto.forestfish.objects.ipfs.connector.IPFSConnector;
 import crypto.forestfish.utils.AVMUtils;
 import crypto.forestfish.utils.CryptUtils;
@@ -141,6 +141,50 @@ public class Start {
 				System.out.println(JSONUtils.prettyPrint(latesttxnote));
 			}
 		}
+		
+		// imageurl
+		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isImageurl()) {
+			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
+
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
+			if (standard == AVMNFTStandard.ARC3) {
+				ARC3Asset arcasset = AVMUtils.createARC3Asset(asa_json);
+
+				System.out.println("assetURL: " + arcasset.getAssetURL());
+				IPFSConnector ipfs_connector = new IPFSConnector();
+
+				// Grab the metadata
+				String metajson = ipfs_connector.getStringContent(arcasset.getAssetURL().replace("#arc3",""));
+				ARC3MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC3MetaData.class);
+				System.out.println(arcmetadata.getImage());
+			}
+			if (standard == AVMNFTStandard.ARC19) {
+				ARC19Asset arcasset = AVMUtils.createARC19Asset(asa_json);
+				String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arcasset.getAssetURL(), arcasset.getReserve().toString());
+
+				if (!"".equals(cid)) {
+					LOGGER.info("Resolved cid from ARC19 template to: " + cid);
+					IPFSConnector ipfs_connector = new IPFSConnector();
+
+					// Grab the metadata and print the 'image' key content
+					String metajson = ipfs_connector.getStringContent("ipfs://" + cid);
+					ARC69ARC19MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69ARC19MetaData.class);
+					System.out.println(arcmetadata.getImage());
+					
+				}
+			}
+			if (standard == AVMNFTStandard.ARC69) {
+				ARC69Asset arcasset = AVMUtils.createARC69Asset(asa_json);
+				
+				// Special case, ARC69 asa with ARC19 encoded url
+				if (arcasset.getAssetURL().contains("template-ipfs")) {
+					String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arcasset.getAssetURL(), arcasset.getReserve().toString());
+					System.out.println("ipfs://" + cid);
+				} else {
+					System.out.println(arcasset.getAssetURL());
+				}
+			}
+		}
 
 		// verify
 		if ((settings.getAction() == Action.VERIFY) && (null != settings.getAssetid())) {
@@ -170,7 +214,7 @@ public class Start {
 
 					// Grab the metadata
 					String metajson = ipfs_connector.getStringContent("ipfs://" + cid);
-					ARC69MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69MetaData.class);
+					ARC69ARC19MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69ARC19MetaData.class);
 
 					ASAVerificationStatus vstatus = AVMUtils.verifyARC19Asset(ipfs_connector, arc19asset, arcmetadata, metajson);
 					System.out.println(vstatus.toString());
@@ -181,7 +225,7 @@ public class Start {
 
 				// Grab the metadata
 				String metajson = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
-				ARC69MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69MetaData.class);
+				ARC69ARC19MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69ARC19MetaData.class);
 
 				ASAVerificationStatus vstatus = AVMUtils.verifyARC69Asset(arcasset, arcmetadata, metajson);
 				System.out.println(vstatus.toString());
@@ -478,7 +522,7 @@ public class Start {
 				// Make sure metadata exists and aligns with specified ARC standard
 				String metajson = FilesUtils.readAllFromFileWithPath(settings.getMetadata_filepath());
 				System.out.println(JSONUtils.prettyPrint(metajson));
-				ARC69MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69MetaData.class);
+				ARC69ARC19MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69ARC19MetaData.class);
 				if (null == arcmetadata.getStandard()) {
 					LOGGER.error("For ARC69 the metadata has to include a standard key");
 					SystemUtils.halt();
@@ -630,7 +674,7 @@ public class Start {
 					SystemUtils.halt();
 				}
 
-				ARC69MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69MetaData.class);
+				ARC69ARC19MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69ARC19MetaData.class);
 				if (null == arcmetadata.getName()) {
 					if (null == settings.getAsset_name()) {
 						LOGGER.warn("We have the metadata JSON but no name is defined and --asset_name was not specified");
@@ -833,6 +877,10 @@ public class Start {
 		// mediadata_url
 		Option mediadata_urlOption = new Option(null, "mediadata_url", true, "URL of the mediadata file to be minted");
 		options.addOption(mediadata_urlOption);
+		
+		// imageurl
+		Option imageurl_Option = new Option(null, "imageurl", false, "Image URL of ARC NFT with specified assetid");
+		options.addOption(imageurl_Option);
 
 		// metadata_filepath
 		Option metadata_filepathption = new Option(null, "metadata_filepath", true, "Filepath to the ARC69 metadata to be minted");
@@ -948,6 +996,7 @@ public class Start {
 			if (cmd.hasOption("probe_arcstandard")) settings.setProbe_arcstandard(true);
 			if (cmd.hasOption("debug")) settings.setDebug(true);
 			if (cmd.hasOption("metadata")) settings.setMetadata(true);
+			if (cmd.hasOption("imageurl")) settings.setImageurl(true);
 
 			if (cmd.hasOption("walletname")) settings.setWalletname(cmd.getOptionValue("walletname"));
 			if (cmd.hasOption("mnemonic")) settings.setMnemonic(cmd.getOptionValue("mnemonic"));
