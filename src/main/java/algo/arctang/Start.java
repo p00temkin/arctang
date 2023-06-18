@@ -82,21 +82,8 @@ public class Start {
 
 		// parsed output
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isParsed()) {
-			String json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(json, connector);
-			if (standard == AVMNFTStandard.ARC3) {
-				ARC3Asset arcasset = AVMUtils.getARC3Info(connector, settings.getAssetid());
-				System.out.println(arcasset.toString());
-			}
-			if (standard == AVMNFTStandard.ARC19) {
-				ARC19Asset arcasset = AVMUtils.getARC19Info(connector, settings.getAssetid());
-				System.out.println(arcasset.toString());
-			}
-			if (standard == AVMNFTStandard.ARC69) {
-				ARC69Asset arc69asset = AVMUtils.getARC69Info(connector, settings.getAssetid());
-				System.out.println(arc69asset.toString());
-			}
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAAssetID(connector, settings.getAssetid());
+			AVMUtils.printARCInfo(connector, standard, settings.getAssetid());
 		}
 
 		// arctype output
@@ -107,129 +94,20 @@ public class Start {
 
 		// metadata
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isMetadata()) {
-			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
-			if (standard == AVMNFTStandard.ARC3) {
-				ARC3Asset arcasset = AVMUtils.createARC3Asset(asa_json);
-
-				System.out.println("assetURL: " + arcasset.getAssetURL());
-				IPFSConnector ipfs_connector = new IPFSConnector();
-
-				// Grab the metadata
-				String metajson = ipfs_connector.getStringContent(arcasset.getAssetURL());
-				System.out.println(JSONUtils.prettyPrint(metajson));
-			}
-			if (standard == AVMNFTStandard.ARC19) {
-				ARC19Asset arcasset = AVMUtils.createARC19Asset(asa_json);
-				String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arcasset.getAssetURL(), arcasset.getReserve().toString());
-
-				if (!"".equals(cid)) {
-					LOGGER.info("Resolved cid from ARC19 template to: " + cid);
-					IPFSConnector ipfs_connector = new IPFSConnector();
-
-					// Grab the metadata
-					String metajson = ipfs_connector.getStringContent("ipfs://" + cid);
-					System.out.println(JSONUtils.prettyPrint(metajson));
-				}
-			}
-			if (standard == AVMNFTStandard.ARC69) {
-				ARC69Asset arcasset = AVMUtils.createARC69Asset(asa_json);
-
-				LOGGER.info("Using indexer to fetch latest tx note ..");
-				String latesttxnote = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
-				System.out.println(JSONUtils.prettyPrint(latesttxnote));
-			}
+			String metajson = AVMUtils.getARCMetadataFromASAAssetID(connector, settings.getAssetid());
+			System.out.println(JSONUtils.prettyPrint(metajson));
 		}
 		
 		// imageurl
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isImageurl()) {
-			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
-			if (standard == AVMNFTStandard.ARC3) {
-				ARC3Asset arcasset = AVMUtils.createARC3Asset(asa_json);
-
-				System.out.println("assetURL: " + arcasset.getAssetURL());
-				IPFSConnector ipfs_connector = new IPFSConnector();
-
-				// Grab the metadata
-				String metajson = ipfs_connector.getStringContent(arcasset.getAssetURL().replace("#arc3",""));
-				ARC3MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC3MetaData.class);
-				System.out.println(arcmetadata.getImage());
-			}
-			if (standard == AVMNFTStandard.ARC19) {
-				ARC19Asset arcasset = AVMUtils.createARC19Asset(asa_json);
-				String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arcasset.getAssetURL(), arcasset.getReserve().toString());
-
-				if (!"".equals(cid)) {
-					LOGGER.info("Resolved cid from ARC19 template to: " + cid);
-					IPFSConnector ipfs_connector = new IPFSConnector();
-
-					// Grab the metadata and print the 'image' key content
-					String metajson = ipfs_connector.getStringContent("ipfs://" + cid);
-					ARC69ARC19MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69ARC19MetaData.class);
-					System.out.println(arcmetadata.getImage());
-					
-				}
-			}
-			if (standard == AVMNFTStandard.ARC69) {
-				ARC69Asset arcasset = AVMUtils.createARC69Asset(asa_json);
-				
-				// Special case, ARC69 asa with ARC19 encoded url
-				if (arcasset.getAssetURL().contains("template-ipfs")) {
-					String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arcasset.getAssetURL(), arcasset.getReserve().toString());
-					System.out.println("ipfs://" + cid);
-				} else {
-					System.out.println(arcasset.getAssetURL());
-				}
-			}
+			String image_url = AVMUtils.getARCImageURL(connector, settings.getAssetid());
+			System.out.println(image_url);
 		}
 
 		// verify
 		if ((settings.getAction() == Action.VERIFY) && (null != settings.getAssetid())) {
-			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
-			LOGGER.info("Standard determined to be: " + standard);
-			if (standard == AVMNFTStandard.ARC3) {
-				ARC3Asset arc3asset = AVMUtils.createARC3Asset(asa_json);
-				IPFSConnector ipfs_connector = new IPFSConnector();
-
-				// Grab the metadata
-				LOGGER.info("Getting metadata from assetURL " + arc3asset.getAssetURL());
-				String metajson = ipfs_connector.getStringContent(arc3asset.getAssetURL().replace("#arc3",""));
-				ARC3MetaData arc3metadata = JSONUtils.createPOJOFromJSON(metajson, ARC3MetaData.class);
-
-				ASAVerificationStatus vstatus = AVMUtils.verifyARC3Asset(ipfs_connector, arc3asset, arc3metadata, metajson);
-				System.out.println(vstatus.toString());
-			}
-			if (standard == AVMNFTStandard.ARC19) {
-				ARC19Asset arc19asset = AVMUtils.createARC19Asset(asa_json);
-				String cid = AVMUtils.extractCIDFromARC19URLAndReserveAddress(arc19asset.getAssetURL(), arc19asset.getReserve().toString());
-
-				if (!"".equals(cid)) {
-					LOGGER.info("Resolved cid from ARC19 template to: " + cid);
-					IPFSConnector ipfs_connector = new IPFSConnector();
-
-					// Grab the metadata
-					String metajson = ipfs_connector.getStringContent("ipfs://" + cid);
-					ARC69ARC19MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69ARC19MetaData.class);
-
-					ASAVerificationStatus vstatus = AVMUtils.verifyARC19Asset(ipfs_connector, arc19asset, arcmetadata, metajson);
-					System.out.println(vstatus.toString());
-				}
-			}
-			if (standard == AVMNFTStandard.ARC69) {
-				ARC69Asset arcasset = AVMUtils.createARC69Asset(asa_json);
-
-				// Grab the metadata
-				String metajson = AVMUtils.getASALatestConfigTransactionNote(connector, arcasset.getAssetID());
-				ARC69ARC19MetaData arcmetadata = JSONUtils.createPOJOFromJSON(metajson, ARC69ARC19MetaData.class);
-
-				ASAVerificationStatus vstatus = AVMUtils.verifyARC69Asset(arcasset, arcmetadata, metajson);
-				System.out.println(vstatus.toString());
-			}
+			ASAVerificationStatus vstatus = AVMUtils.verifyARCAsset(connector, settings.getAssetid());
+			System.out.println(vstatus.toString());
 		}
 
 		// opt-in
@@ -237,7 +115,7 @@ public class Start {
 
 			// First we make sure the assetid represents an ARC
 			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(connector, asa_json);
 			if (false ||
 					(standard == AVMNFTStandard.ARC3) ||
 					(standard == AVMNFTStandard.ARC19) ||
@@ -330,7 +208,7 @@ public class Start {
 			LOGGER.info("Using wallet with address " + wallet.getAddress() + " for reconfig");
 
 			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(connector, asa_json);
 
 			AVMASAMutables mutables = null;
 			if (standard == AVMNFTStandard.ARC3) {
@@ -507,7 +385,7 @@ public class Start {
 
 			String asa_json = AVMUtils.getASARawJSONResponse(connector, settings.getAssetid());
 
-			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(asa_json, connector);
+			AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(connector, asa_json);
 			LOGGER.info("Standard determined to be: " + standard);
 			if (standard == AVMNFTStandard.ARC69) {
 
@@ -758,7 +636,7 @@ public class Start {
 			for (AssetHolding asa: asa_holdings) {
 				if (AVMUtils.checkIfASAExists(connector, asa.assetId)) {
 					String json = AVMUtils.getASARawJSONResponse(connector, asa.assetId);
-					AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(json, connector);
+					AVMNFTStandard standard = AVMUtils.identifyARCStandardFromASAJSON(connector, json);
 					ASAContentOnchainReply reply = AVMUtils.getASAJSON(json);
 					if ((!asa.amount.equals(BigInteger.ZERO)) && (standard != AVMNFTStandard.UNKNOWN)) System.out.println(AVMUtils.printASAAssetOwnership(asa.amount, reply, standard));
 				} else {

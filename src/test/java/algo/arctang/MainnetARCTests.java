@@ -11,17 +11,19 @@ import org.slf4j.LoggerFactory;
 
 import algo.arctang.enums.Action;
 import crypto.forestfish.enums.avm.AVMChain;
+import crypto.forestfish.enums.avm.AVMNFTStandard;
 import crypto.forestfish.objects.avm.connector.AVMBlockChainConnector;
 import crypto.forestfish.objects.avm.model.nft.ARC19Asset;
 import crypto.forestfish.objects.avm.model.nft.ARC3Asset;
 import crypto.forestfish.objects.avm.model.nft.ARC69Asset;
+import crypto.forestfish.objects.avm.model.nft.ASAVerificationStatus;
 import crypto.forestfish.objects.ipfs.connector.IPFSConnector;
 import crypto.forestfish.utils.AVMUtils;
 import crypto.forestfish.utils.JSONUtils;
 
-public class MainnetARCMetadata {
+public class MainnetARCTests {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(MainnetARCMetadata.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MainnetARCTests.class);
 
 	private static AVMChain chain = AVMChain.MAINNET;
 
@@ -58,7 +60,7 @@ public class MainnetARCMetadata {
 
 		// Map raw JSON to ARC3 object
 		ARC3Asset arcasset = AVMUtils.createARC3Asset(asa_json);
-		assertTrue("Verify the assetID is parsed correctly", 387411719L == arcasset.getAssetID());
+		assertTrue("Verify the assetID is parsed correctly", arcasset.getAssetID().equals(387411719L));
 		assertEquals("Verify the asset name is parsed correctly", "ARC3", arcasset.getAssetName());
 		assertEquals("Verify the unit name is parsed correctly", "NFTARC3", arcasset.getUnitName());
 		assertEquals("Verify the URL is parsed correctly", "ipfs://bafkreibvnaigebcrjwabx3u5xqyjbykaw64wtve6myv4yuarux64m3lvmm#arc3", arcasset.getAssetURL());
@@ -96,7 +98,7 @@ public class MainnetARCMetadata {
 
 		// Map raw JSON to ARC19 object
 		ARC19Asset arcasset = AVMUtils.createARC19Asset(asa_json);
-		assertTrue("Verify the assetID is parsed correctly", 865610737L == arcasset.getAssetID());
+		assertTrue("Verify the assetID is parsed correctly", arcasset.getAssetID().equals(865610737L));
 		assertEquals("Verify the asset name is parsed correctly", "Anon 220", arcasset.getAssetName());
 		assertEquals("Verify the unit name is parsed correctly", "S1ANON", arcasset.getUnitName());
 
@@ -137,7 +139,7 @@ public class MainnetARCMetadata {
 
 		// Map raw JSON to ARC69 object
 		ARC69Asset arcasset = AVMUtils.createARC69Asset(asa_json);
-		assertTrue("Verify the assetID is parsed correctly", 490139078L == arcasset.getAssetID());
+		assertTrue("Verify the assetID is parsed correctly", arcasset.getAssetID().equals(490139078L));
 		assertEquals("Verify the asset name is parsed correctly", "Zip", arcasset.getAssetName());
 		assertEquals("Verify the unit name is parsed correctly", "ALCH0046", arcasset.getUnitName());
 
@@ -147,5 +149,110 @@ public class MainnetARCMetadata {
 		assertEquals("Verify metadata JSON content is correct", "{\"standard\":\"arc69\",\"description\":\"Zip\",\"external_url\":\"Alchemon.net\",\"mime_type\":\"image/png\",\"properties\":{\"Number\":\"0046\",\"Rarity\":\"Common\",\"Type\":\"Electric\",\"Strength\":\"70\",\"Health\":\"58\",\"Speed\":\"67\",\"Defense\":\"55\"}}", JSONUtils.compactPrint(latesttxnote));
 		System.out.println(JSONUtils.prettyPrint(latesttxnote));
 	}
+	
+	@Test
+	public void testARCStandardIdentify() {
+		LOGGER.info("testARCStandardIdentify()");
 
+		// java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 387411719 --probe_arcstandard
+		Settings settings = new Settings();
+		settings.setChain(chain);
+		settings.setAction(Action.QUERY);
+		settings.setMetadata(true);
+		settings.setAssetid(490139078L);
+		settings.sanityCheck();
+
+		// Sanity check our Algorand connection
+		AVMBlockChainConnector connector = new AVMBlockChainConnector(settings.getChainInfo());
+		Long lastRound = AVMUtils.getLastRound(connector);
+		assertTrue("Algorand mainnet lastRound has sane value ", lastRound > 100L);
+		Long lastRoundIndexer = AVMUtils.getIndexerHealthCheck(connector);
+		assertTrue("Algorand mainnet lastRound lastRoundIndexer sane value ", lastRoundIndexer > 100L);
+
+		// Verify ARC3 for 387411719
+		AVMNFTStandard standard_arc3 = AVMUtils.identifyARCStandardFromASAAssetID(connector, 387411719L);
+		assertEquals("Verify ARC3 for 387411719", AVMNFTStandard.ARC3, standard_arc3);
+		
+		// Verify ARC19 for 865610737
+		AVMNFTStandard standard_arc19 = AVMUtils.identifyARCStandardFromASAAssetID(connector, 865610737L);
+		assertEquals("Verify ARC19 for 865610737", AVMNFTStandard.ARC19, standard_arc19);
+		
+		// Verify ARC69 for 490139078
+		AVMNFTStandard standard_arc69 = AVMUtils.identifyARCStandardFromASAAssetID(connector, 490139078L);
+		assertEquals("Verify ARC69 for 490139078", AVMNFTStandard.ARC69, standard_arc69);
+		
+		// Verify ARC69+ARC19 for 805169021
+		AVMNFTStandard standard_arcmix = AVMUtils.identifyARCStandardFromASAAssetID(connector, 805169021L);
+		assertEquals("Verify ARC69 for 805169021", AVMNFTStandard.ARC69, standard_arcmix);
+	}
+
+	@Test
+	public void testARCImageURL() {
+		LOGGER.info("testARCImageURL()");
+
+		// java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 865610737 --imageurl
+		Settings settings = new Settings();
+		settings.setChain(chain);
+		settings.setAction(Action.QUERY);
+		settings.setMetadata(true);
+		settings.setAssetid(490139078L);
+		settings.sanityCheck();
+
+		// Sanity check our Algorand connection
+		AVMBlockChainConnector connector = new AVMBlockChainConnector(settings.getChainInfo());
+		Long lastRound = AVMUtils.getLastRound(connector);
+		assertTrue("Algorand mainnet lastRound has sane value ", lastRound > 100L);
+		Long lastRoundIndexer = AVMUtils.getIndexerHealthCheck(connector);
+		assertTrue("Algorand mainnet lastRound lastRoundIndexer sane value ", lastRoundIndexer > 100L);
+
+		// Verify ARC19 imageurl for 865610737
+		String arc19_imageurl = AVMUtils.getARCImageURL(connector, 865610737L);
+		assertEquals("Verify ARC19 imageurl for 865610737", arc19_imageurl, "ipfs://bafybeidhlz7iznf5rpxwj5xfukppvkizxf4yp3cnpipjcmvbjkg7rwwwau");
+		
+		// Verify ARC3 imageurl for 387411719
+		String arc3_imageurl = AVMUtils.getARCImageURL(connector, 387411719L);
+		assertEquals("Verify ARC3 imageurl for 387411719", arc3_imageurl, "ipfs://bafkreibsgazs6waapitr4rvwsd75z5jgcxryiqacllrexszaoha2ph6voq");
+		
+		// Verify ARC69 imageurl for 387411719
+		String arc69_imageurl = AVMUtils.getARCImageURL(connector, 490139078L);
+		assertEquals("Verify ARC69 imageurl for 490139078", arc69_imageurl, "https://gateway.pinata.cloud/ipfs/QmVxZFeLHtbrdtFabb46ToSvegpKyva1jzTkR61a8uM7qT");
+		
+		// Verify ARC69+ARC19 for 805169021
+		String arcmix_imageurl = AVMUtils.getARCImageURL(connector, 805169021L);
+		assertEquals("Verify ARC69/ARC19 mix imageurl for 805169021", arcmix_imageurl, "ipfs://QmXzA1ktmaVKiEj3FWdstH7G8L5h1TXxoDSv7a3AWX3pyx");
+	}
+	
+	@Test
+	public void testARCVerify() {
+		LOGGER.info("testARCVerify()");
+
+		// java -jar ./arctang.jar --chain MAINNET --action VERIFY --assetid 865610737
+		Settings settings = new Settings();
+		settings.setChain(chain);
+		settings.setAction(Action.QUERY);
+		settings.setMetadata(true);
+		settings.setAssetid(490139078L);
+		settings.sanityCheck();
+
+		// Sanity check our Algorand connection
+		AVMBlockChainConnector connector = new AVMBlockChainConnector(settings.getChainInfo());
+		Long lastRound = AVMUtils.getLastRound(connector);
+		assertTrue("Algorand mainnet lastRound has sane value ", lastRound > 100L);
+		Long lastRoundIndexer = AVMUtils.getIndexerHealthCheck(connector);
+		assertTrue("Algorand mainnet lastRound lastRoundIndexer sane value ", lastRoundIndexer > 100L);
+
+		// Verify score ARC69 490139078
+		ASAVerificationStatus vstatus_arc69 = AVMUtils.verifyARCAsset(connector, 490139078L);
+		assertEquals("Verify ARC69 score for 490139078", 4, vstatus_arc69.getScore_out_of_10());
+		
+		// Verify score ARC3 387411719
+		ASAVerificationStatus vstatus_arc3 = AVMUtils.verifyARCAsset(connector, 387411719L);
+		assertEquals("Verify ARC3 score for 387411719", 8, vstatus_arc3.getScore_out_of_10());
+		
+		// Verify score ARC19 865610737
+		ASAVerificationStatus vstatus_arc19 = AVMUtils.verifyARCAsset(connector, 865610737L);
+		assertEquals("Verify ARC19 score for 865610737", 6, vstatus_arc19.getScore_out_of_10());
+		
+	}
+	
 }
