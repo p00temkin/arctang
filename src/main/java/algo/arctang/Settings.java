@@ -45,6 +45,7 @@ public class Settings {
 	private boolean parsed = false;
 	private boolean probe_arcstandard = false;
 	private boolean metadata = false;
+	private boolean metadata_trail = false;
 	private boolean imageurl = false;
 	
 	private String walletname;
@@ -571,6 +572,14 @@ public class Settings {
 
 	public void setImageurl(boolean imageurl) {
 		this.imageurl = imageurl;
+	}
+
+	public boolean isMetadata_trail() {
+		return metadata_trail;
+	}
+
+	public void setMetadata_trail(boolean metadata_trail) {
+		this.metadata_trail = metadata_trail;
 	}
 
 }

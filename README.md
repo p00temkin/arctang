@@ -28,10 +28,18 @@ On Algorand an NFT is instead represented as an individual ASA (Algorand Standar
 - **ARC69**
   - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0069.md>
   - NFT mediafile focused standard. 
-  - The url field points to the NFT digital asset file. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction and simple access to the mediafile url.
+  - The url field points to the NFT digital asset file and is immutable. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction and simple access to the mediafile url.
   - Suitable for mutable NFTs where the mediafile is locked, easily accessed, but the compact metadata associated with it changes over time.
- 
+
 In common for all of these standards is that the four addresses of an ASA (manager, reserve, freeze and clawback) can be updated by the manager address unless it is set to "". 
+
+There are also odd combos of the standards, example given below:
+
+- **ARC69 + ARC19**
+  - ARC69 with ARC19 url field encoding.
+  - The url field points to the NFT digital asset file, which is made mutable using the ARC19 templating standard. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction. The mediafile URL is no longer easily fetched (IPFS located) but is mutable. This combo results in a ARC69 SHOULD requirement failure but is still valid. 
+  - Suitable for mutable NFTs where the mediafile and the compact metadata associated with it changes over time.
+  - Example NFT collection which uses this combo: R4V3N (https://algoxnft.com/asset/805179829)
 
 ### Supporting ARCs:
 
@@ -785,6 +793,53 @@ To get a console print of ARC assets you can use the LIST action, either with th
    ARC ASAs owned by S3S5AHMEVU5YXIE5...
    amount=1/8000                  unit-name=ALCH0046       standard=ARC69     url=https://gatew...
    ```
+   
+### Track dynamic Metadata JSON changes
+
+Some projects combine the ARC69 and ARC19 standards to create mutable NFTs where the mediafile and the compact metadata associated with it changes over time. 
+
+An example project which does this is [Project Raven](https://projectraven.world/), where wearable/gear updates are represented by metadata updates to the ASA. If we consider [ASA ID 805168778](https://www.nftexplorer.app/asset/805168778):
+
+| ![alt text](https://github.com/p00temkin/arctang/blob/master/img/r4v3n.png?raw=true) |
+| :--: |
+
+To get the full metadata JSON history we can use the --metadata_trail query option to arctang:
+
+   ```
+	java -jar ./arctang.jar --chain MAINNET --action QUERY --assetid 805168778 --metadata_trail
+	.. 
+	======== txid=FDMLQJ5EI5UBU6CL7TGM2TYLX3X6SQD6SGXQVSJR7M6V4FI3SAAQ block=22214178 UTCtime=2022-07-14 17:34:12 ========
+	{
+	  "standard": "arc69",
+	  "properties": {
+	    "Background": "none",
+	    "Back": "none",
+	    "Mouth": "none",
+	    "Eyes": "none",
+	    "Facewear": "none",
+	    "Basewear": "none",
+	    "Outerwear": "none",
+	    "Hair": "none"
+	  }
+	}
+	======== txid=5F3HCB27HL5F6ICQ3IH3MWF3BGSLWCW6OXNNXCUPSQAHPZB4X63A block=22252947 UTCtime=2022-07-16 16:07:29 ========
+	{
+	  "standard": "arc69",
+	  "properties": {
+	    "Background": "RVT01#11 Dusty Pink Portal",
+	    "Back": "RVT02#04 Compound Bow",
+	    "Mouth": "RVT03#05 Tongue Out",
+	    "Eyes": "RVT04#02 Blue",
+	    "Facewear": "none",
+	    "Basewear": "none",
+	    "Outerwear": "none",
+	    "Hair": "none"
+	  }
+	}
+	..
+   ```
+
+This allows us to track all the changes to the metadata made by the creator R4V3NI5QQSJNSYJZH63PJUN3O2HOVUX5N4OUO754H4STN472DES2MS5JSY (projectraven.algo) using metadata reconfig updates using the ARC69 standard. 
 
 ### Prerequisites
 
@@ -829,6 +884,7 @@ Options:
    --probe_arcstandard		Estimates ARC standard of assetid
    --debug				Debug mode
    --metadata			Grab the JSON metadata of ARC NFT with specified assetid
+   --metadata_trail		Grab the JSON metadata update history for the specified ARC NFT
    --imageurl			Grab the image URL of the of ARC NFT with specified assetid
    --walletname			Wallet name to use for specified action
    --mnemonic			Mnemonic to use for creating an Algorand account. Use with --walletname

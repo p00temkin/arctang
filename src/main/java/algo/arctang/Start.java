@@ -1,6 +1,7 @@
 package algo.arctang;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -30,9 +31,11 @@ import crypto.forestfish.objects.avm.model.nft.ARC69Asset;
 import crypto.forestfish.objects.avm.model.nft.ASAVerificationStatus;
 import crypto.forestfish.objects.avm.model.nft.metadata.ARC3MetaData;
 import crypto.forestfish.objects.avm.model.nft.metadata.ARC69ARC19MetaData;
+import crypto.forestfish.objects.avm.model.nft.metadata.MetaDataEntry;
 import crypto.forestfish.objects.ipfs.connector.IPFSConnector;
 import crypto.forestfish.utils.AVMUtils;
 import crypto.forestfish.utils.CryptUtils;
+import crypto.forestfish.utils.DateUtils;
 import crypto.forestfish.utils.FilesUtils;
 import crypto.forestfish.utils.JSONUtils;
 import crypto.forestfish.utils.NFTUtils;
@@ -97,7 +100,20 @@ public class Start {
 			String metajson = AVMUtils.getARCMetadataFromASAAssetID(connector, settings.getAssetid());
 			System.out.println(JSONUtils.prettyPrint(metajson));
 		}
-		
+
+		// metadata_trail
+		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isMetadata_trail()) {
+			ArrayList<MetaDataEntry> metajsons = AVMUtils.getARCMetadataHistoryFromASAAssetID(connector, settings.getAssetid());
+			String delim = "========";
+			String outstr = "";
+			for (MetaDataEntry metaentry: metajsons) {
+				outstr = delim + " txid=" + metaentry.getTx_id() + " block=" + metaentry.getTx_confirmedRound() + " UTCtime=" + DateUtils.epochInSecondsToUTC(metaentry.getTx_roundTime()) + " " + delim;
+				System.out.println(outstr);
+				System.out.println(JSONUtils.prettyPrint(metaentry.getMetajson()));
+			}
+			System.out.println("=".repeat(outstr.length()));
+		}
+
 		// imageurl
 		if ((settings.getAction() == Action.QUERY) && (null != settings.getAssetid()) && settings.isImageurl()) {
 			String image_url = AVMUtils.getARCImageURL(connector, settings.getAssetid());
@@ -724,6 +740,10 @@ public class Start {
 		Option metadataOption = new Option(null, "metadata", false, "Grab the JSON metadata of ARC NFT with specified assetid");
 		options.addOption(metadataOption);
 
+		// metadata_trail
+		Option metadatatailOption = new Option(null, "metadata_trail", false, "Grab the JSON metadata update history for the specified ARC NFT");
+		options.addOption(metadatatailOption);
+
 		// mnemonic
 		Option mnemonicOption = new Option(null, "mnemonic", true, "Mnemonic to use for creating an Algorand account. Use with --walletname");
 		options.addOption(mnemonicOption);
@@ -755,7 +775,7 @@ public class Start {
 		// mediadata_url
 		Option mediadata_urlOption = new Option(null, "mediadata_url", true, "URL of the mediadata file to be minted");
 		options.addOption(mediadata_urlOption);
-		
+
 		// imageurl
 		Option imageurl_Option = new Option(null, "imageurl", false, "Image URL of ARC NFT with specified assetid");
 		options.addOption(imageurl_Option);
@@ -874,6 +894,7 @@ public class Start {
 			if (cmd.hasOption("probe_arcstandard")) settings.setProbe_arcstandard(true);
 			if (cmd.hasOption("debug")) settings.setDebug(true);
 			if (cmd.hasOption("metadata")) settings.setMetadata(true);
+			if (cmd.hasOption("metadata_trail")) settings.setMetadata_trail(true);
 			if (cmd.hasOption("imageurl")) settings.setImageurl(true);
 
 			if (cmd.hasOption("walletname")) settings.setWalletname(cmd.getOptionValue("walletname"));
