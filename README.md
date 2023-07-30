@@ -839,7 +839,7 @@ To get the full metadata JSON history we can use the --metadata_trail query opti
 	..
    ```
 
-This allows us to track all the changes to the metadata made by the creator R4V3NI5QQSJNSYJZH63PJUN3O2HOVUX5N4OUO754H4STN472DES2MS5JSY (projectraven.algo) using metadata reconfig updates using the ARC69 standard. 
+This allows us to track all the changes to the metadata made by the manager account R4V3NI5QQSJNSYJZH63PJUN3O2HOVUX5N4OUO754H4STN472DES2MS5JSY using metadata reconfig updates using the ARC69 (+ARC19) standard. 
 
 ### Prerequisites
 
