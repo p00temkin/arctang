@@ -247,6 +247,11 @@ public class Settings {
 			LOGGER.error("Need to provide --assetid when using QUERY action");
 			SystemUtils.halt();
 		}
+		
+		if ((this.getAction() == Action.QUERY) && !this.isImageurl() && !this.isMetadata() && !this.isMetadata_trail() && !this.isRaw() && !this.isProbe_arcstandard()) {
+			LOGGER.error("Need to provide --imageurl, --metadata, --metadata_trail, --raw or --probe_arcstandard when using QUERY action");
+			SystemUtils.halt();
+		}
 
 		if ((this.getAction() == Action.WALLETCONFIG)) {
 			

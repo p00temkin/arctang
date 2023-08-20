@@ -946,12 +946,13 @@ Algorand documentation:
 - <https://developer.algorand.org/docs/rest-apis/indexer/#assetparams>
 
 Algorand NFT galleries:
+- <https://www.nftexplorer.app>
+- <https://www.randgallery.com/algo-collection>
+- <https://exa.market>
 - <https://algoxnft.com/>
 - <https://algogems.io>
 - <https://zestbloom.com>
 - <https://dartroom.xyz>
-- <https://www.nftexplorer.app>
-- <https://www.randgallery.com/algo-collection>
 
 Ethereum EIPs directly referenced by ARC standards:
 - <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md>

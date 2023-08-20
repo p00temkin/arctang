@@ -48,8 +48,7 @@ public class Start {
 	public static void main(String[] args) {
 		LOGGER.debug("arctang init()");
 
-		Settings settings = null;
-		settings = parseCliArgs(args);
+		Settings settings = parseCliArgs(args);
 
 		// Early exit if NETCONFIG/WALLETCONFIG actions
 		if ((settings.getAction() == Action.NETCONFIG) || (settings.getAction() == Action.WALLETCONFIG)){
