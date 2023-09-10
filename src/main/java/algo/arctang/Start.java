@@ -667,7 +667,7 @@ public class Start {
 		Options options = new Options();
 
 		// chain
-		Option chainOption = new Option(null, "chain", true, "The Algorand chain: MAINNET, BETANET or TESTNET");
+		Option chainOption = new Option(null, "chain", true, "The Algorand chain: MAINNET, BETANET, VOI_TESTNET or TESTNET");
 		options.addOption(chainOption);
 
 		// action
@@ -715,7 +715,7 @@ public class Start {
 		Option confignetworkOption = new Option(null, "confignetwork", false, "Configure node to use for Algorand network connectivity, requires --nodeurl, --nodeport, --nodeauthtoken, --nodeauthtoken_key");
 		options.addOption(confignetworkOption);
 
-		// parsed
+		// debug
 		Option debugOption = new Option(null, "debug", false, "Debug mode");
 		options.addOption(debugOption);
 
@@ -845,6 +845,7 @@ public class Start {
 				if (cmd.getOptionValue("chain").equalsIgnoreCase("MAINNET")) settings.setChain(AVMChain.MAINNET);
 				if (cmd.getOptionValue("chain").equalsIgnoreCase("BETANET")) settings.setChain(AVMChain.BETANET);
 				if (cmd.getOptionValue("chain").equalsIgnoreCase("TESTNET")) settings.setChain(AVMChain.TESTNET);
+				if (cmd.getOptionValue("chain").equalsIgnoreCase("VOI_TESTNET")) settings.setChain(AVMChain.VOI_TESTNET);
 			}
 
 			if (cmd.hasOption("action")) {

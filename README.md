@@ -21,13 +21,13 @@ On Algorand an NFT is instead represented as an individual ASA (Algorand Standar
 
 - **ARC19**
   - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0019.md>
-  - NFT metadata focused standard. 
+  - NFT metadata focused standard.
   - Enforces off-chain IPFS metadata by using the url field as a template populated by the reserve address field which holds the IPFS CID. Easy to update since the reserve address value can be replaced with a single transaction, which in turn changes the metadata. The reserve address is only irrelevant (and thus can be used in this way) for pure NFTs (1 of 1).
   - Suitable for mutable NFTs intended to transition into immutable NFTs, with complete metadata (+mediafile) changes. 
 
 - **ARC69**
   - <https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0069.md>
-  - NFT mediafile focused standard. 
+  - NFT mediafile focused standard.
   - The url field points to the NFT digital asset file and is immutable. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction and simple access to the mediafile url.
   - Suitable for mutable NFTs where the mediafile is locked, easily accessed, but the compact metadata associated with it changes over time.
 
@@ -37,7 +37,7 @@ There are also odd combos of the standards, example given below:
 
 - **ARC69 + ARC19**
   - ARC69 with ARC19 url field encoding.
-  - The url field points to the NFT digital asset file, which is made mutable using the ARC19 templating standard. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction. The mediafile URL is no longer easily fetched (IPFS located) but is mutable. This combo results in a ARC69 SHOULD requirement failure but is still valid. 
+  - The url field points to the NFT digital asset file, which is made mutable using the ARC19 templating standard. The ASA metadata is stored on-chain and represented by the note field of the latest valid assetconfig transaction. Since the note field is limited to 1KB the metadata JSON is also restricted to this size. This design means fetching the metadata is complex and requires access to an archive node, but also allows metadata to be updated with a single transaction. The mediafile URL is no longer easily fetched (IPFS located) but is mutable. This combo results in a ARC69 SHOULD requirement failure but is still valid.
   - Suitable for mutable NFTs where the mediafile and the compact metadata associated with it changes over time.
   - Example NFT collection which uses this combo: R4V3N (https://algoxnft.com/asset/805179829)
 
@@ -80,6 +80,20 @@ First configure how you connect to the Algorand blockchain, which is done by spe
 
    ```
 	java -jar ./arctang.jar 
+	--chain BETANET 
+	--action NETCONFIG 
+	--nodeurl https://betanet-algorand.api.purestake.io/ps2 
+	--nodeport 443 
+	--nodeauthtoken_key "X-API-Key" 
+	--nodeauthtoken <api-key>
+	--idxurl https://betanet-algorand.api.purestake.io/idx2
+	--idxport 443
+	--idxauthtoken_key "X-API-Key" 
+	--idxauthtoken <api-key>
+   ```
+
+   ```
+	java -jar ./arctang.jar 
 	--chain TESTNET 
 	--action NETCONFIG 
 	--nodeurl https://testnet-algorand.api.purestake.io/ps2 
@@ -92,7 +106,7 @@ First configure how you connect to the Algorand blockchain, which is done by spe
 	--idxauthtoken <api-key>
    ```
 
-This stores the details in .avm/networks/[MAINNET|TESTNET] and you no longer need to specify these parameters for every action, only the --chain option. You can get a free apikey over at [Purestake](https://www.purestake.com/).
+This stores the details in .avm/networks/[MAINNET|BETANET|TESTNET] and you no longer need to specify these parameters for every action, only the --chain option. You can get a free apikey over at [Purestake](https://www.purestake.com/).
 
 Note for EVM users: The indexer is similar to an archive node with various indexes, ie subset of [The Graph](https://thegraph.com/) functionality but using REST calls. 
 
