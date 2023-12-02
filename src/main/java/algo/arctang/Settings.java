@@ -303,7 +303,7 @@ public class Settings {
 				LOGGER.error("Need to provide --to for the target account when using the TRANSFER action");
 				SystemUtils.halt();
 			}
-			if (!AVMUtils.isValidAlgorandAccount(this.getTo())) {
+			if (!AVMUtils.isValidAlgorandAddress(this.getTo())) {
 				LOGGER.error("The --to argument needs to be a valid Algorand account, you provided " + this.getTo());
 				SystemUtils.halt();
 			}
