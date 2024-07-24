@@ -63,7 +63,7 @@
 		<dependency>
 			<groupId>crypto.forestfish</groupId>
 			<artifactId>forestfish</artifactId>
-			<version>0.2.2</version>
+			<version>0.2.11</version>
 		</dependency>
 	</dependencies>
 </project>
