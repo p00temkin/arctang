@@ -61,10 +61,6 @@ public class Start {
 		 */
 		AVMBlockChainConnector connector = null;
 		if (settings.getAction() != Action.CONVERT) {
-			if (null == settings.getChainInfo()) {
-				LOGGER.error("Attempt to move forward with action " + settings.getAction() + " without a network connection");
-				SystemUtils.halt();
-			}
 			connector = new AVMBlockChainConnector(settings.getChainInfo());
 			Long lastRound = AVMUtils.getLastRound(connector);
 			LOGGER.debug("lastRound: " + lastRound);

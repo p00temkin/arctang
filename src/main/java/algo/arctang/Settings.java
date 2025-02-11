@@ -178,6 +178,10 @@ public class Settings {
 				SystemUtils.halt();
 			}
 			
+			if (null != this.getChain()) {
+				chainInfo = AVMUtils.getAVMChainInfo(this.getChain());
+			}
+			
 			// Check for local network configuration unless provided as cli params
 			if (true && 
 					(null != this.getChain()) &&
@@ -186,9 +190,6 @@ public class Settings {
 					(null != this.getNodeauthtoken()) &&
 					(null != this.getNodeauthtoken_key()) &&
 					true) {
-				
-				// Create chaininfo instance
-				AVMChainInfo chainInfo = AVMUtils.getAVMChainInfo(this.getChain());
 				
 				// Update the relay nodes
 				ArrayList<AlgoRelayNode> nodes = new ArrayList<AlgoRelayNode>();
@@ -207,8 +208,6 @@ public class Settings {
 					chainInfo.setIdxnodes(idxnodes);
 				}
 				
-				this.chainInfo = chainInfo;
-				
 				// Save to local disk if present
 				if (this.getAction() == Action.NETCONFIG) {
 					String json = JSONUtils.createJSONFromPOJO(chainInfo);
@@ -221,10 +220,9 @@ public class Settings {
 					}
 				}
 				
-				// Require defined Algorand node
+				// Encourage use of private Algorand node
 				if (chainInfo.getNodes().isEmpty()) {
-					LOGGER.error("You need to define a node for " + this.getChain() + " using --confignetwork since no public nodes are available");
-					SystemUtils.halt();
+					LOGGER.info("For " + this.getChain() + " consider using --confignetwork to define your own");
 				}
 				
 			} else {
@@ -236,8 +234,7 @@ public class Settings {
 					AVMChainInfo chainInfo = JSONUtils.createPOJOFromJSON(json, AVMChainInfo.class);
 					this.chainInfo = chainInfo;
 				} else {
-					LOGGER.error("Need chainInfo for " + this.getChain() + ", please consider using --confignetwork since no public nodes are available");
-					SystemUtils.halt();
+					LOGGER.info("For " + this.getChain() + " consider using --confignetwork to define your own");
 				}
 			}
 			
